@@ -4,8 +4,10 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - test -n "$NEXT_PUBLIC_BOLHATECH_API_BASE_URL" || (echo "NEXT_PUBLIC_BOLHATECH_API_BASE_URL is required in Amplify environment variables." && exit 1)
     build:
       commands:
+        - env | grep -e NEXT_PUBLIC_BOLHATECH_API_BASE_URL >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next

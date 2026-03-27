@@ -15,6 +15,7 @@ export function SiteChrome({ children }) {
         }
         actions={
           <>
+            <Link href="/login">Entrar</Link>
             <Link href="/companion">Companion</Link>
             <Link href="/moderacao">Moderação</Link>
             <Link href="/c/ia">Comunidades</Link>

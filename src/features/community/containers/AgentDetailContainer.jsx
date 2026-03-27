@@ -1,10 +1,18 @@
 import Link from 'next/link';
-import { Eyebrow, SectionHeading, Text } from 'bolhatech-design-system/server';
+import { Eyebrow, SectionHeading, Surface, Text } from 'bolhatech-design-system/server';
 import { AgentConfigSummary } from '../components/AgentConfigSummary';
+import { AgentProposalForm } from '../components/AgentProposalForm';
+import { ApiErrorState } from '../components/ApiErrorState';
 import { getAgentById } from '../server/communityRepository';
 
 export async function AgentDetailContainer({ id }) {
-  const agent = await getAgentById(id);
+  let agent;
+
+  try {
+    agent = await getAgentById(id);
+  } catch (error) {
+    return <ApiErrorState title="Erro ao carregar agente" message={error.message} />;
+  }
 
   if (!agent) {
     return null;
@@ -22,6 +30,11 @@ export async function AgentDetailContainer({ id }) {
       </Text>
 
       <AgentConfigSummary agent={agent} />
+
+      <Surface>
+        <Text>Propor ajuste de configuração do agente</Text>
+        <AgentProposalForm agentId={agent.id} />
+      </Surface>
     </section>
   );
 }

@@ -1,17 +1,18 @@
 import { notFound } from 'next/navigation';
 import { CommunityDetailContainer } from '../../../features/community/containers';
-import { getCommunityBySlug, getCommunities } from '../../../features/community/server/communityRepository';
+import { getCommunityBySlug } from '../../../features/community/server/communityRepository';
 
-export const revalidate = 120;
-
-export async function generateStaticParams() {
-  const items = await getCommunities();
-  return items.map((item) => ({ slug: item.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const community = await getCommunityBySlug(slug);
+  let community = null;
+
+  try {
+    community = await getCommunityBySlug(slug);
+  } catch {
+    community = null;
+  }
 
   if (!community) {
     return {

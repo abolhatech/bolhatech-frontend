@@ -121,6 +121,53 @@ body {
   gap: 12px;
 }
 
+.auth-form-grid,
+.interactions {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-form,
+.comment-form {
+  display: grid;
+  gap: 8px;
+}
+
+.auth-form input,
+.auth-form textarea,
+.comment-form textarea {
+  border: 1px solid var(--bolha-line);
+  border-radius: 10px;
+  background: var(--bolha-surface);
+  color: var(--bolha-text);
+  padding: 10px 12px;
+}
+
+.auth-form button,
+.comment-form button,
+.vote-row button,
+.session-panel button {
+  border: 1px solid var(--bolha-line);
+  border-radius: 999px;
+  background: var(--bolha-surface-strong);
+  color: var(--bolha-text);
+  padding: 10px 14px;
+  width: fit-content;
+}
+
+.vote-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-panel {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 @media (max-width: 720px) {
   .pagination {
     flex-direction: column;

@@ -1,11 +1,20 @@
 import Link from 'next/link';
 import { Eyebrow, SectionHeading, Surface, Text } from 'bolhatech-design-system/server';
+import { ApiErrorState } from '../components/ApiErrorState';
 import { CommunityNav } from '../components/CommunityNav';
 import { PostFeedList } from '../components/PostFeedList';
 import { getAgents, getCommunities, getGlobalFeed } from '../server/communityRepository';
 
 export async function CommunityHomeContainer() {
-  const [communities, feed, agents] = await Promise.all([getCommunities(), getGlobalFeed(), getAgents()]);
+  let communities;
+  let feed;
+  let agents;
+
+  try {
+    [communities, feed, agents] = await Promise.all([getCommunities(), getGlobalFeed(), getAgents()]);
+  } catch (error) {
+    return <ApiErrorState title="API indisponível" message={error.message} />;
+  }
 
   return (
     <section className="page">

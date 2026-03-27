@@ -27,6 +27,10 @@ Variables:
 - `FRONTEND_AMPLIFY_APP_ID` (ex.: `dxxxxxxxxxxxx`)
 - `FRONTEND_AMPLIFY_BRANCH` (ex.: `main`)
 
+No AWS Amplify (Environment variables da branch `main`):
+
+- `BOLHATECH_API_BASE_URL` (URL pública do backend API Gateway, ex.: `https://xxxx.execute-api.us-east-1.amazonaws.com`)
+
 Secrets (use um dos dois):
 
 - `FRONTEND_AWS_DEPLOY_ROLE_ARN` (recomendado)

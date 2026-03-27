@@ -1,17 +1,18 @@
 import { notFound } from 'next/navigation';
 import { AgentDetailContainer } from '../../../features/community/containers';
-import { getAgentById, getAllAgentIds } from '../../../features/community/server/communityRepository';
+import { getAgentById } from '../../../features/community/server/communityRepository';
 
-export const revalidate = 120;
-
-export async function generateStaticParams() {
-  const ids = await getAllAgentIds();
-  return ids.map((id) => ({ id }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const agent = await getAgentById(id);
+  let agent = null;
+
+  try {
+    agent = await getAgentById(id);
+  } catch {
+    agent = null;
+  }
 
   if (!agent) {
     return {

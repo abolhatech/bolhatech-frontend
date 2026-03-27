@@ -1,102 +1,129 @@
-import { agents, commentsByPost, communities, companion, posts, recommendations } from '../data/mockCommunity';
+import 'server-only';
+import { cookies } from 'next/headers';
 
-const API_BASE_URL = process.env.BOLHATECH_API_BASE_URL;
+const SESSION_COOKIE_NAME = 'bolha_session';
 
-async function request(path, options = {}) {
-  if (!API_BASE_URL) {
+export class ApiError extends Error {
+  constructor(status, message, code = 'api_error') {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+function getApiBaseUrl() {
+  const baseUrl = process.env.BOLHATECH_API_BASE_URL;
+
+  if (!baseUrl) {
+    throw new ApiError(500, 'BOLHATECH_API_BASE_URL is not configured', 'missing_api_base_url');
+  }
+
+  return baseUrl;
+}
+
+async function getSession() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!raw) {
     return null;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      headers: {
-        'content-type': 'application/json',
-        'x-user-id': 'user-guest',
-        ...options.headers,
-      },
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    return response.json();
+    return JSON.parse(raw);
   } catch {
     return null;
   }
 }
 
-function sortByScoreAndDate(items) {
-  return [...items].sort((left, right) => {
-    if (left.score !== right.score) {
-      return right.score - left.score;
-    }
-
-    return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+async function request(path, options = {}) {
+  const apiBaseUrl = getApiBaseUrl();
+  const session = await getSession();
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
+    headers: {
+      'content-type': 'application/json',
+      'x-user-id': session?.userId || 'user-guest',
+      ...options.headers,
+    },
+    cache: 'no-store',
   });
+
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, payload?.message || payload?.error || `Request failed (${response.status})`, payload?.error || 'request_failed');
+  }
+
+  return payload;
 }
 
 export async function getCommunities() {
   const data = await request('/communities');
-  return data?.items || communities;
+  return data.items;
 }
 
 export async function getCommunityBySlug(slug) {
   const data = await request(`/communities/${slug}`);
-  return data?.community || communities.find((item) => item.slug === slug);
+  return data.community;
 }
 
 export async function getGlobalFeed() {
   const data = await request('/communities/global-feed');
-  return data?.items || sortByScoreAndDate(posts);
+  return data.items;
 }
 
 export async function getFeedByCommunity(slug) {
   const data = await request(`/communities/${slug}/feed`);
-
-  if (data?.community && data?.feed) {
-    return data;
-  }
-
   return {
-    community: communities.find((item) => item.slug === slug) || null,
-    feed: sortByScoreAndDate(posts.filter((item) => item.communitySlug === slug)),
+    community: data.community,
+    feed: data.feed,
   };
 }
 
 export async function getPostDetails(postId) {
   const data = await request(`/posts/${postId}`);
-
-  if (data?.post) {
-    return data;
-  }
-
   return {
-    post: posts.find((item) => item.id === postId) || null,
-    comments: commentsByPost[postId] || [],
+    post: data.post,
+    comments: data.comments || [],
   };
 }
 
 export async function getAgents() {
   const data = await request('/agents');
-  return data?.items || agents;
+  return data.items;
 }
 
 export async function getAgentById(id) {
   const data = await request(`/agents/${id}`);
-  return data?.agent || agents.find((item) => item.id === id) || null;
+  return data.agent;
 }
 
 export async function getCompanion() {
+  const session = await getSession();
+  if (!session?.userId) {
+    throw new ApiError(401, 'Authentication required', 'unauthenticated');
+  }
+
   const data = await request('/companions/me');
-  return data?.companion || companion;
+  return data.companion;
 }
 
 export async function getCompanionRecommendations() {
+  const session = await getSession();
+  if (!session?.userId) {
+    throw new ApiError(401, 'Authentication required', 'unauthenticated');
+  }
+
   const data = await request('/companions/me/recommendations');
-  return data?.items || recommendations;
+  return data.items;
 }
 
 export async function getAllPostIds() {

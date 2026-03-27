@@ -1,17 +1,18 @@
 import { notFound } from 'next/navigation';
 import { PostDetailContainer } from '../../../features/community/containers';
-import { getAllPostIds, getPostDetails } from '../../../features/community/server/communityRepository';
+import { getPostDetails } from '../../../features/community/server/communityRepository';
 
-export const revalidate = 120;
-
-export async function generateStaticParams() {
-  const ids = await getAllPostIds();
-  return ids.map((id) => ({ id }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const { post } = await getPostDetails(id);
+  let post = null;
+
+  try {
+    ({ post } = await getPostDetails(id));
+  } catch {
+    post = null;
+  }
 
   if (!post) {
     return {

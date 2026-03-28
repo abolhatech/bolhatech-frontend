@@ -3,22 +3,23 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from 'bolhatech-design-system/server';
+import { VoteBar } from 'bolhatech-design-system/client';
 
 export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
   const router = useRouter();
-  const [upvotes, setUpvotes] = useState(initialUpvotes);
-  const [downvotes, setDownvotes] = useState(initialDownvotes);
+  const [upvotes, setUpvotes] = useState(initialUpvotes ?? 0);
+  const [downvotes, setDownvotes] = useState(initialDownvotes ?? 0);
+  const [userVote, setUserVote] = useState(null); // 'up' | 'down' | null
   const [comment, setComment] = useState('');
   const [sessionChecked, setSessionChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function ensureSession() {
-    if (sessionChecked) {
-      return authenticated;
-    }
-
+    if (sessionChecked) return authenticated;
     const response = await fetch('/api/auth/session', { cache: 'no-store' });
     setSessionChecked(true);
     setAuthenticated(response.ok);
@@ -28,10 +29,12 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
   async function vote(voteValue) {
     setError('');
     setMessage('');
+    setLoading(true);
 
     const isAuthenticated = await ensureSession();
     if (!isAuthenticated) {
       setError('Você precisa estar logado para votar.');
+      setLoading(false);
       return;
     }
 
@@ -42,6 +45,8 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
     });
 
     const payload = await response.json();
+    setLoading(false);
+
     if (!response.ok) {
       setError(payload?.message || payload?.error || 'Falha ao votar');
       return;
@@ -49,7 +54,7 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
 
     setUpvotes(payload.post.upvotes);
     setDownvotes(payload.post.downvotes);
-    setMessage('Voto registrado.');
+    setUserVote(voteValue === 1 ? 'up' : 'down');
     router.refresh();
   }
 
@@ -64,9 +69,11 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
       return;
     }
 
+    setLoading(true);
     const isAuthenticated = await ensureSession();
     if (!isAuthenticated) {
       setError('Você precisa estar logado para comentar.');
+      setLoading(false);
       return;
     }
 
@@ -77,6 +84,8 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
     });
 
     const payload = await response.json();
+    setLoading(false);
+
     if (!response.ok) {
       setError(payload?.message || payload?.error || 'Falha ao comentar');
       return;
@@ -87,36 +96,52 @@ export function PostInteractions({ postId, initialUpvotes, initialDownvotes }) {
     router.refresh();
   }
 
+  const score = upvotes - downvotes;
+
   return (
     <div className="interactions">
-      <div className="vote-row">
-        <button type="button" onClick={() => vote(1)}>
-          ↑ {upvotes}
-        </button>
-        <button type="button" onClick={() => vote(-1)}>
-          ↓ {downvotes}
-        </button>
+      {/* Votação */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <VoteBar
+          score={score}
+          userVote={userVote}
+          onUpvote={() => vote(1)}
+          onDownvote={() => vote(-1)}
+          disabled={loading}
+        />
+
         {!authenticated && sessionChecked ? (
-          <Link href="/login" className="chip-link">
+          <Button as="a" href="/login" variant="ghost" size="sm">
             Entrar para interagir
-          </Link>
+          </Button>
         ) : null}
       </div>
 
-      <form onSubmit={submitComment} className="comment-form">
-        <label htmlFor="comment-input">Comentário</label>
+      {/* Formulário de comentário */}
+      <form onSubmit={submitComment} className="comment-form" id="comentarios">
+        <label
+          htmlFor="comment-input"
+          style={{ fontSize: 13, fontWeight: 500, color: 'var(--bolha-muted)' }}
+        >
+          Deixe um comentário
+        </label>
         <textarea
           id="comment-input"
           value={comment}
           onChange={(event) => setComment(event.target.value)}
           placeholder="Compartilhe sua visão..."
           rows={4}
+          disabled={loading}
         />
-        <button type="submit">Enviar comentário</button>
+        <div>
+          <Button type="submit" variant="primary" size="sm" disabled={loading}>
+            {loading ? 'Enviando...' : 'Enviar comentário'}
+          </Button>
+        </div>
       </form>
 
-      {message ? <p>{message}</p> : null}
-      {error ? <p>{error}</p> : null}
+      {message ? <p className="feedback-ok">{message}</p> : null}
+      {error ? <p className="feedback-err">{error}</p> : null}
     </div>
   );
 }

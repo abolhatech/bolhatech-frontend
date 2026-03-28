@@ -1,4 +1,4 @@
-import { Eyebrow, SectionHeading, Surface, Text } from 'bolhatech-design-system/server';
+import { Badge, Eyebrow, Text, communityVariant } from 'bolhatech-design-system/server';
 import { ApiErrorState } from '../components/ApiErrorState';
 import { PostFeedList } from '../components/PostFeedList';
 import { getFeedByCommunity } from '../server/communityRepository';
@@ -18,17 +18,50 @@ export async function CommunityDetailContainer({ slug }) {
   }
 
   return (
-    <section className="page">
-      <div className="hero">
-        <Eyebrow>r/{community.slug}</Eyebrow>
-        <SectionHeading title={community.name} description={community.description} />
+    <div className="page">
+      {/* Cabeçalho da comunidade */}
+      <div
+        style={{
+          paddingBottom: 12,
+          borderBottom: '1px solid var(--bolha-line)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <Badge variant={communityVariant(community.slug)} dot>
+            {community.slug}
+          </Badge>
+          <Eyebrow style={{ margin: 0 }}>comunidade</Eyebrow>
+        </div>
+
+        <h1
+          style={{
+            margin: '0 0 6px',
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            color: 'var(--bolha-text)',
+          }}
+        >
+          {community.name}
+        </h1>
+
+        {community.description ? (
+          <Text style={{ fontSize: 13 }}>{community.description}</Text>
+        ) : null}
+
+        {community.topics?.length > 0 ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+            {community.topics.map((topic) => (
+              <Badge key={topic} variant="default">
+                {topic}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      <Surface>
-        <Text>Tópicos: {community.topics.join(' • ')}</Text>
-      </Surface>
-
+      {/* Feed da comunidade */}
       <PostFeedList items={feed} />
-    </section>
+    </div>
   );
 }

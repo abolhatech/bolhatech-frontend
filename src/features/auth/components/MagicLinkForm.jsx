@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button, Input, Surface } from 'bolhatech-design-system/server';
 
 export function MagicLinkForm({ initialToken = '' }) {
   const router = useRouter();
@@ -13,9 +14,7 @@ export function MagicLinkForm({ initialToken = '' }) {
   const hasInitialToken = useMemo(() => Boolean(initialToken), [initialToken]);
 
   useEffect(() => {
-    if (initialToken) {
-      setToken(initialToken);
-    }
+    if (initialToken) setToken(initialToken);
   }, [initialToken]);
 
   async function requestMagicLink(event) {
@@ -36,7 +35,7 @@ export function MagicLinkForm({ initialToken = '' }) {
         throw new Error(payload?.message || payload?.error || 'Falha ao solicitar magic link');
       }
 
-      setRequestMessage('Magic link solicitado. Verifique seu e-mail para continuar.');
+      setRequestMessage('Magic link enviado. Verifique seu e-mail para continuar.');
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -72,38 +71,56 @@ export function MagicLinkForm({ initialToken = '' }) {
 
   return (
     <div className="auth-form-grid">
-      <form onSubmit={requestMagicLink} className="auth-form">
-        <label htmlFor="magic-email">E-mail</label>
-        <input
-          id="magic-email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="voce@exemplo.com"
-          required
-        />
-        <button type="submit" disabled={loading}>
-          Solicitar magic link
-        </button>
-      </form>
+      {/* Step 1 — solicitar link */}
+      <Surface style={{ padding: 16 }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'var(--bolha-text)' }}>
+          Entrar com e-mail
+        </h2>
+        <form onSubmit={requestMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Input
+            id="magic-email"
+            type="email"
+            label="E-mail"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="voce@exemplo.com"
+            required
+            disabled={loading}
+          />
+          <div>
+            <Button type="submit" variant="primary" disabled={loading}>
+              {loading ? 'Enviando...' : 'Solicitar magic link'}
+            </Button>
+          </div>
+          {requestMessage ? <p className="feedback-ok">{requestMessage}</p> : null}
+        </form>
+      </Surface>
 
-      <form onSubmit={verifyMagicLink} className="auth-form">
-        <label htmlFor="magic-token">Token recebido</label>
-        <input
-          id="magic-token"
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          placeholder="cole o token"
-          required
-        />
-        <button type="submit" disabled={loading}>
-          Validar e entrar
-        </button>
-        {hasInitialToken ? <p>Token detectado na URL. Clique em validar para concluir o login.</p> : null}
-      </form>
+      {/* Step 2 — validar token */}
+      <Surface style={{ padding: 16 }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600, color: 'var(--bolha-text)' }}>
+          Já tem um token?
+        </h2>
+        <form onSubmit={verifyMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Input
+            id="magic-token"
+            label="Token recebido"
+            value={token}
+            onChange={(event) => setToken(event.target.value)}
+            placeholder="cole o token aqui"
+            hint={hasInitialToken ? 'Token detectado na URL. Clique em validar para concluir o login.' : undefined}
+            required
+            disabled={loading}
+          />
+          <div>
+            <Button type="submit" variant="outline" disabled={loading}>
+              {loading ? 'Validando...' : 'Validar e entrar'}
+            </Button>
+          </div>
+        </form>
+      </Surface>
 
-      {requestMessage ? <p>{requestMessage}</p> : null}
-      {error ? <p>{error}</p> : null}
+      {error ? <p className="feedback-err">{error}</p> : null}
     </div>
   );
 }

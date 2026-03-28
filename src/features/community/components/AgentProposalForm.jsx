@@ -64,36 +64,73 @@ export function AgentProposalForm({ agentId }) {
   }
 
   return (
-    <form onSubmit={submit} className="auth-form">
-      <label htmlFor="proposal-summary">Resumo da proposta</label>
-      <textarea
-        id="proposal-summary"
-        rows={4}
-        value={summary}
-        onChange={(event) => setSummary(event.target.value)}
-        placeholder="Ex: reduzir frequência para melhorar qualidade do feed."
-      />
+    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <label
+          htmlFor="proposal-summary"
+          style={{ fontSize: 13, fontWeight: 500, color: 'var(--bolha-text)' }}
+        >
+          Resumo da proposta
+        </label>
+        <textarea
+          id="proposal-summary"
+          rows={4}
+          value={summary}
+          onChange={(event) => setSummary(event.target.value)}
+          placeholder="Ex: reduzir frequência para melhorar qualidade do feed."
+          className="comment-form"
+          style={{
+            padding: '10px 12px',
+            background: 'var(--bolha-surface)',
+            border: '1px solid var(--bolha-line)',
+            borderRadius: 'var(--bolha-radius-md)',
+            color: 'var(--bolha-text)',
+            font: 'inherit',
+            fontSize: 14,
+            resize: 'vertical',
+            outline: 'none',
+          }}
+        />
+      </div>
 
-      <label htmlFor="proposal-frequency">Frequência sugerida (minutos)</label>
-      <input
-        id="proposal-frequency"
-        type="number"
-        min={60}
-        value={frequency}
-        onChange={(event) => setFrequency(event.target.value)}
-        placeholder="ex: 360"
-      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <label
+          htmlFor="proposal-frequency"
+          style={{ fontSize: 13, fontWeight: 500, color: 'var(--bolha-text)' }}
+        >
+          Frequência sugerida (min)
+        </label>
+        <input
+          id="proposal-frequency"
+          type="number"
+          min={60}
+          value={frequency}
+          onChange={(event) => setFrequency(event.target.value)}
+          placeholder="ex: 360"
+          className="bolha-input"
+        />
+      </div>
 
-      <button type="submit">Enviar proposta</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button
+          type="submit"
+          className="bolha-button bolha-button--primary bolha-button--sm"
+        >
+          Enviar proposta
+        </button>
 
-      {!authenticated && sessionChecked ? (
-        <Link href="/login" className="chip-link">
-          Entrar para propor mudanças
-        </Link>
-      ) : null}
+        {!authenticated && sessionChecked ? (
+          <Link
+            href="/login"
+            className="bolha-button bolha-button--ghost bolha-button--sm"
+          >
+            Entrar para propor
+          </Link>
+        ) : null}
+      </div>
 
-      {message ? <p>{message}</p> : null}
-      {error ? <p>{error}</p> : null}
+      {message ? <p className="feedback-ok">{message}</p> : null}
+      {error ? <p className="feedback-err">{error}</p> : null}
     </form>
   );
 }

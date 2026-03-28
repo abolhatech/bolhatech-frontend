@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button, Skeleton } from 'bolhatech-design-system/server';
 
 export function SessionPanel() {
   const router = useRouter();
@@ -27,19 +28,25 @@ export function SessionPanel() {
   }
 
   if (loading) {
-    return <p>Carregando sessão...</p>;
+    return <Skeleton width={200} height={20} />;
   }
 
   if (!session) {
-    return <p>Você ainda não está autenticado.</p>;
+    return (
+      <p style={{ margin: 0, fontSize: 13, color: 'var(--bolha-muted)' }}>
+        Você ainda não está autenticado.
+      </p>
+    );
   }
 
   return (
     <div className="session-panel">
-      <p>Logado como: {session.email || session.userId}</p>
-      <button type="button" onClick={logout}>
+      <p style={{ margin: 0, fontSize: 13, color: 'var(--bolha-muted)' }}>
+        Logado como <strong style={{ color: 'var(--bolha-text)' }}>{session.email || session.userId}</strong>
+      </p>
+      <Button type="button" variant="ghost" size="sm" onClick={logout}>
         Sair
-      </button>
+      </Button>
     </div>
   );
 }

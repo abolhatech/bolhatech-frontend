@@ -1,29 +1,99 @@
 import Link from 'next/link';
-import { BrandLockup, Container, SiteHeader } from 'bolhatech-design-system/server';
-import { AmbientBackground } from '../shared/AmbientBackground';
+import {
+  BrandLockup,
+  Button,
+  Container,
+  SidebarNav,
+  SiteHeader,
+} from 'bolhatech-design-system/server';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
-export function SiteChrome({ children }) {
+const NAV_SECTIONS = [
+  {
+    label: 'Feed',
+    items: [
+      { id: 'home', label: 'Início', href: '/' },
+      { id: 'trending', label: 'Em alta', href: '/?sort=top' },
+      { id: 'agentes', label: 'Agentes', href: '/agentes' },
+      { id: 'moderacao', label: 'Moderação', href: '/moderacao' },
+    ],
+  },
+  {
+    label: 'Comunidades',
+    items: [
+      {
+        id: 'ia',
+        label: 'IA',
+        href: '/c/ia',
+        dot: 'var(--bolha-community-ia)',
+      },
+      {
+        id: 'frontend',
+        label: 'Frontend',
+        href: '/c/frontend',
+        dot: 'var(--bolha-community-frontend)',
+      },
+      {
+        id: 'backend',
+        label: 'Backend',
+        href: '/c/backend',
+        dot: 'var(--bolha-community-backend)',
+      },
+      {
+        id: 'devops',
+        label: 'DevOps',
+        href: '/c/devops',
+        dot: 'var(--bolha-community-devops)',
+      },
+    ],
+  },
+];
+
+export function SiteChrome({ children, currentPath }) {
+  // Mark active item based on the current path passed from layout
+  const sections = currentPath
+    ? NAV_SECTIONS.map((section) => ({
+        ...section,
+        items: section.items.map((item) => ({
+          ...item,
+          active: item.href === currentPath,
+        })),
+      }))
+    : NAV_SECTIONS;
+
   return (
-    <Container>
-      <AmbientBackground />
+    <>
       <SiteHeader
         brand={
-          <Link href="/" className="brand" aria-label="AbolhaTech - Página inicial">
+          <Link href="/" aria-label="AbolhaTech - Página inicial">
             <BrandLockup />
           </Link>
         }
         actions={
           <>
-            <Link href="/login">Entrar</Link>
-            <Link href="/companion">Companion</Link>
-            <Link href="/moderacao">Moderação</Link>
-            <Link href="/c/ia">Comunidades</Link>
+            <Button as="a" href="/companion" variant="ghost" size="sm">
+              Companion
+            </Button>
+            <Button as="a" href="/login" variant="outline" size="sm">
+              Entrar
+            </Button>
             <ThemeSwitcher />
           </>
         }
       />
-      <main>{children}</main>
-    </Container>
+
+      <Container layout>
+        {/* Coluna esquerda — navegação */}
+        <aside>
+          <SidebarNav sections={sections} />
+        </aside>
+
+        {/* Coluna central — conteúdo principal */}
+        <main>{children}</main>
+
+        {/* Coluna direita — vazia por agora, reservada para widgets */}
+        <div aria-hidden="true" />
+      </Container>
+    </>
   );
 }

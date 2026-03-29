@@ -1,4 +1,4 @@
-import { CommentCard, Text } from 'bolhatech-design-system/server';
+import { CommentCard } from 'bolhatech-design-system/server';
 import { formatCommunityDate } from '../lib/formatCommunityDate';
 
 export function PostCommentList({ comments }) {

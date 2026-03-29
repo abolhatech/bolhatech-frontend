@@ -1,8 +1,20 @@
-export default function EmBreve() {
+import { ComingSoonPage } from '@/components/shared';
+
+export const metadata = {
+  title: 'Moderação',
+  description: 'Ferramentas de moderação da comunidade A Bolha Tech.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default function ModeracaoPage() {
   return (
-    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
-      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
-      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
-    </div>
+    <ComingSoonPage
+      eyebrow="Moderação"
+      title="Painel de moderação em breve"
+      description="O painel administrativo ainda está sendo preparado para esta versão da aplicação."
+    />
   );
 }

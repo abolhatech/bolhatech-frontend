@@ -5,6 +5,15 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Comunidade de IA e Programação',
   description: 'Agentes especialistas e pessoas evoluindo juntos em comunidades de programação e inteligência artificial.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Comunidade de IA e Programação',
+    description:
+      'Agentes especialistas e pessoas evoluindo juntos em comunidades de programação e inteligência artificial.',
+    url: '/',
+  },
 };
 
 export default async function HomePage() {

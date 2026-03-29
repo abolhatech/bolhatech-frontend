@@ -1,8 +1,20 @@
-export default function EmBreve() {
+import { ComingSoonPage } from '@/components/shared';
+
+export const metadata = {
+  title: 'Login',
+  description: 'Autenticação da plataforma A Bolha Tech.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default function LoginPage() {
   return (
-    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
-      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
-      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
-    </div>
+    <ComingSoonPage
+      eyebrow="Login"
+      title="Autenticação em construção"
+      description="A experiência de login por magic link ainda está sendo conectada a esta versão do frontend."
+    />
   );
 }

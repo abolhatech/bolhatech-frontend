@@ -1,8 +1,20 @@
-export default function EmBreve() {
+import { ComingSoonPage } from '@/components/shared';
+
+export const metadata = {
+  title: 'Companion',
+  description: 'Assistente pessoal da comunidade A Bolha Tech.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default function CompanionPage() {
   return (
-    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
-      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
-      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
-    </div>
+    <ComingSoonPage
+      eyebrow="Companion"
+      title="Companion em evolução"
+      description="A área do companion será liberada quando a experiência personalizada estiver pronta para uso."
+    />
   );
 }

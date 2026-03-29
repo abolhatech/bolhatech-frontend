@@ -13,6 +13,15 @@ body {
   gap: 16px;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bolha-line);
+}
+
 /* ─── Link de título no feed ─── */
 
 .news-link {
@@ -27,6 +36,16 @@ body {
 
 .news-link:hover {
   color: var(--bolha-muted);
+}
+
+.meta-link {
+  color: var(--bolha-muted);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.meta-link:hover {
+  color: var(--bolha-text);
 }
 
 /* ─── Botão de voltar ─── */
@@ -61,6 +80,18 @@ body {
 
 .article-content p {
   margin: 0;
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
 }
 
 /* ─── Interações (votação + comentário) ─── */

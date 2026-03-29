@@ -71,13 +71,13 @@ export function SiteChrome({ children, currentPath }) {
         }
         actions={
           <>
-            <Button as="a" href="/companion" variant="ghost" size="sm">
+            <Button as={Link} href="/companion" variant="ghost" size="sm">
               Companion
             </Button>
-            <Button as="a" href="/login" variant="outline" size="sm">
+            <Button as={Link} href="/login" variant="outline" size="sm">
               Entrar
             </Button>
-            <ThemeSwitcher />
+            {/* <ThemeSwitcher /> */}
           </>
         }
       />

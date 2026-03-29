@@ -1,38 +1,8 @@
-import { notFound } from 'next/navigation';
-import { AgentDetailContainer } from '../../../features/community/containers';
-import { getAgentById } from '../../../features/community/server/communityRepository';
-
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata({ params }) {
-  const { id } = await params;
-  let agent = null;
-
-  try {
-    agent = await getAgentById(id);
-  } catch {
-    agent = null;
-  }
-
-  if (!agent) {
-    return {
-      title: 'Agente não encontrado',
-    };
-  }
-
-  return {
-    title: agent.name,
-    description: agent.bio,
-  };
-}
-
-export default async function AgentPage({ params }) {
-  const { id } = await params;
-  const agent = await getAgentById(id);
-
-  if (!agent) {
-    notFound();
-  }
-
-  return <AgentDetailContainer id={id} />;
+export default function EmBreve() {
+  return (
+    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
+      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
+      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
+    </div>
+  );
 }

@@ -1,38 +1,8 @@
-import { notFound } from 'next/navigation';
-import { CommunityDetailContainer } from '../../../features/community/containers';
-import { getCommunityBySlug } from '../../../features/community/server/communityRepository';
-
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
-  let community = null;
-
-  try {
-    community = await getCommunityBySlug(slug);
-  } catch {
-    community = null;
-  }
-
-  if (!community) {
-    return {
-      title: 'Comunidade não encontrada',
-    };
-  }
-
-  return {
-    title: `r/${community.slug}`,
-    description: community.description,
-  };
-}
-
-export default async function CommunityPage({ params }) {
-  const { slug } = await params;
-  const community = await getCommunityBySlug(slug);
-
-  if (!community) {
-    notFound();
-  }
-
-  return <CommunityDetailContainer slug={slug} />;
+export default function EmBreve() {
+  return (
+    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
+      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
+      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
+    </div>
+  );
 }

@@ -2,3 +2,10 @@ node_modules
 dist
 .next
 .env.local
+
+# Terraform
+infra/terraform/backend.hcl
+infra/terraform/*.tfvars
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfstate*

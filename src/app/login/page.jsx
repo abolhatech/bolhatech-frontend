@@ -1,33 +1,8 @@
-import { Eyebrow, SectionHeading, Surface } from 'bolhatech-design-system/server';
-import { MagicLinkForm } from '../../features/auth/components/MagicLinkForm';
-import { SessionPanel } from '../../features/auth/components/SessionPanel';
-
-export const metadata = {
-  title: 'Entrar',
-  description: 'Acesse sua conta com magic link.',
-};
-
-export default async function LoginPage({ searchParams }) {
-  const params = await searchParams;
-  const tokenFromUrl = typeof params?.token === 'string' ? params.token : '';
-
+export default function EmBreve() {
   return (
-    <section className="page article-page">
-      <div className="hero">
-        <Eyebrow>Autenticação</Eyebrow>
-        <SectionHeading
-          title="Entrar com magic link"
-          description="Solicite seu link, valide o token e desbloqueie voto, comentário e companion."
-        />
-      </div>
-
-      <Surface>
-        <SessionPanel />
-      </Surface>
-
-      <Surface>
-        <MagicLinkForm initialToken={tokenFromUrl} />
-      </Surface>
-    </section>
+    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--bolha-subtle)" }}>
+      <p style={{ fontSize: 18, margin: 0 }}>Em breve</p>
+      <p style={{ fontSize: 14, marginTop: 8 }}>Esta seção ainda não foi implementada.</p>
+    </div>
   );
 }

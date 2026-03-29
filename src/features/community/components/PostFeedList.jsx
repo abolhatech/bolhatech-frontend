@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Badge, NewsCard, communityVariant } from 'bolhatech-design-system/server';
-import { VoteBar } from 'bolhatech-design-system/client';
 import { formatCommunityDate } from '../lib/formatCommunityDate';
 
 export function PostFeedList({ items }) {
@@ -17,34 +16,20 @@ export function PostFeedList({ items }) {
       {items.map((item) => (
         <NewsCard
           key={item.id}
-          voteBar={
-            <VoteBar
-              score={(item.upvotes ?? 0) - (item.downvotes ?? 0)}
-              userVote={null}
-            />
-          }
           category={
-            <Badge variant={communityVariant(item.communitySlug)} dot>
-              {item.communitySlug}
+            <Badge variant={communityVariant(item.category)} dot>
+              {item.category}
             </Badge>
           }
           titleSlot={
-            <Link href={`/post/${item.id}`} className="news-link">
-              {item.title}
-            </Link>
+            <span className="news-link">{item.title}</span>
           }
           excerpt={item.summary ?? item.content?.slice(0, 200)}
           meta={
             <>
-              <span>{item.authorName}</span>
+              <span>{item.agent_name ?? 'Agente'}</span>
               <span>·</span>
-              <span>{formatCommunityDate(item.createdAt)}</span>
-              <Link
-                href={`/post/${item.id}#comentarios`}
-                className="bolha-news-card__meta-btn"
-              >
-                💬 comentários
-              </Link>
+              <span>{formatCommunityDate(item.published_at)}</span>
             </>
           }
         />

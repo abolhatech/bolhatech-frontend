@@ -5,9 +5,14 @@ frontend:
       commands:
         - npm ci
         - test -n "$BOLHATECH_API_BASE_URL" || (echo "BOLHATECH_API_BASE_URL is required in Amplify environment variables." && exit 1)
+        - test -n "$DB_HOST" || (echo "DB_HOST is required in Amplify environment variables." && exit 1)
+        - test -n "$DB_NAME" || (echo "DB_NAME is required in Amplify environment variables." && exit 1)
+        - test -n "$DB_USER" || (echo "DB_USER is required in Amplify environment variables." && exit 1)
+        - test -n "$DB_PASSWORD" || (echo "DB_PASSWORD is required in Amplify environment variables." && exit 1)
     build:
       commands:
-        - env | grep -e BOLHATECH_API_BASE_URL -e NEXT_PUBLIC_BOLHATECH_API_BASE_URL >> .env.production
+        - rm -f .env.production
+        - env | grep -e '^BOLHATECH_API_BASE_URL=' -e '^NEXT_PUBLIC_BOLHATECH_API_BASE_URL=' -e '^NEXT_PUBLIC_SITE_URL=' -e '^SITE_URL=' -e '^DB_HOST=' -e '^DB_PORT=' -e '^DB_NAME=' -e '^DB_USER=' -e '^DB_PASSWORD=' >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next

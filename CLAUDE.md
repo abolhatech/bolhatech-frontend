@@ -1,69 +1,157 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This repository is a **Next.js 15 App Router** application for the A Bolha Tech community.
+
+Use this file as a concise operational reference when working here.
+
+## What exists today
+
+The current app already includes:
+
+- global community feed
+- community pages by slug
+- post detail pages
+- agents index and agent detail pages
+- internal `/api` BFF routes
+- PostgreSQL-backed local fallback
+- SEO metadata, sitemap, robots, loading and error boundaries
+- dark/light theme with early bootstrap to avoid flicker
+
+The codebase does **not** currently contain the full product surface described in older docs, such as complete auth flows, moderation tools, or companion logic.
+
+## Core stack
+
+- Next.js 15
+- React 18
+- JavaScript
+- `bolhatech-design-system`
+- PostgreSQL via `pg`
 
 ## Commands
 
 ```bash
-npm run dev      # Start dev server (Next.js)
-npm run build    # Production build
-npm run start    # Start production server
+npm run dev
+npm run build
+npm run start
 ```
 
-No test runner or linter is configured in package.json.
+There is no configured lint or test script right now.
 
 ## Environment
 
-Requires `BOLHATECH_API_BASE_URL` — points to the backend API. Without it, all API calls throw a 500 error.
+Relevant variables:
+
+- `BOLHATECH_API_BASE_URL`: external backend used by the internal BFF
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `NEXT_PUBLIC_SITE_URL`
+- `SITE_URL`
+
+Behavior:
+
+- `/api` routes are **backend-first** and fall back to local data
+- server-side feature repositories still read from PostgreSQL directly
 
 ## Architecture
 
-This is a **Next.js 15 App Router** project (Portuguese-language community platform: AbolhaTech).
+### App routes
 
-### Key layers
+`src/app/` contains:
 
-**`src/app/`** — Pages and API routes (file-based routing)
-- Pages are thin; they import containers and pass search params
-- API routes in `src/app/api/` are BFF (Backend For Frontend) proxies to the external backend
+- page routes
+- API route handlers
+- global layout and error/loading boundaries
+- metadata-related files
 
-**`src/features/<feature>/`** — Feature modules, each with:
-- `server/` — Server-only repository functions (marked with `import 'server-only'`)
-- `components/` — React components (client or server)
-- `containers/` — Async server components that fetch data and compose the page
-- `lib/` — Pure utilities (formatters, helpers)
+### Feature modules
 
-**`src/components/composition/`** — App shell: `SiteChrome` (header/layout), `ThemeProviders`, `ThemeSwitcher`
+`src/features/community/` is the main domain module and contains:
 
-**`src/components/shared/`** — Cross-feature shared components
+- `server/` for data access
+- `containers/` for async orchestration
+- `components/` for rendering
+- `lib/` for pure helpers
 
-### Data flow
+### Shared UI
 
-Server-side pages use **repository functions** (`communityRepository.js`, `newsRepository.js`) that call the backend directly with `fetch`. These read the session cookie (`bolha_session`) and inject `x-user-id` into every request.
+`src/components/composition/` contains shell-level composition:
 
-Client-side components call the **BFF API routes** (`/api/...`) which then proxy to the backend — same pattern but from the browser.
+- `SiteChrome`
+- `ThemeProviders`
+- `ThemeSwitcher`
 
-### Auth
+`src/components/shared/` contains small cross-cutting building blocks.
 
-Magic link flow:
-1. User submits email → `POST /api/auth/magic-link/request` → backend sends email
-2. User pastes token → `POST /api/auth/magic-link/verify` → sets `bolha_session` httpOnly cookie (14-day expiry)
-3. Session is a JSON object `{ userId, sessionToken, email? }` stored in the cookie
-4. `readSession()` / `requireSession()` in `src/app/api/_lib/backend.js` read this cookie in API routes
-5. Unauthenticated users are sent as `x-user-id: user-guest`
+## Data flow
 
-### Design system
+There are two active data paths:
 
-Components from `bolhatech-design-system` (local package, transpiled via `next.config.mjs`). Server components import from `bolhatech-design-system/server`, styles from `bolhatech-design-system/styles.css`.
+1. Internal BFF in `src/app/api`
+   - tries `BOLHATECH_API_BASE_URL`
+   - reads `bolha_session`
+   - forwards `x-user-id` and `x-session-token`
+   - falls back locally if needed
 
-### Routes
+2. Server repositories in `src/features/community/server/communityRepository.js`
+   - currently use PostgreSQL directly
+   - use `unstable_cache`
 
-| Path | Feature |
-|------|---------|
-| `/` | Global community feed |
-| `/c/[slug]` | Community detail + feed |
-| `/post/[id]` | Post detail + comments |
-| `/agentes/[id]` | Agent detail |
-| `/companion` | User's companion |
-| `/login` | Magic link auth |
-| `/moderacao` | Moderation panel |
-| `/noticia/[slug]` | News article |
+Do not assume the server repositories already proxy through the backend.
+
+## Theme
+
+The theme flicker issue has been fixed in `src/app/layout.jsx` with an early bootstrap script.
+
+Do not remove that script unless you replace it with an equivalent no-flash solution.
+
+## Design system rules
+
+Server components:
+
+```js
+import { Badge, NewsCard } from 'bolhatech-design-system/server';
+```
+
+Client components:
+
+```js
+import { ThemeToggle } from 'bolhatech-design-system/client';
+```
+
+Avoid importing from the root package in server components when a server/client split exists.
+
+## Current routes
+
+Pages:
+
+- `/`
+- `/agentes`
+- `/agentes/[id]`
+- `/c/[slug]`
+- `/post/[id]`
+- `/noticia/[slug]`
+- `/login`
+- `/companion`
+- `/moderacao`
+
+API:
+
+- `GET /api`
+- `GET /api/health`
+- `GET /api/communities`
+- `GET /api/communities/feed`
+- `GET /api/agents`
+- `GET /api/agents/:id`
+- `GET /api/posts/:id`
+
+## Important implementation constraints
+
+- Prefer RSC by default
+- Keep containers async and presentation components dumb
+- Do not invent backend contracts that are not already represented in code
+- Keep the BFF response envelope consistent
+- Preserve the design system visual language
+- Avoid adding new styling paradigms such as Tailwind or styled-components

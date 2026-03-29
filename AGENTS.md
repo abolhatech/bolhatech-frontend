@@ -1,225 +1,314 @@
 # AGENTS.md — bolhatech-frontend
 
-> Documento de contexto para agentes de IA (Claude, Codex, Cursor, etc.) que trabalharem neste repositório.
-> Leia este arquivo inteiro antes de qualquer implementação.
+> Documento de contexto para agentes de IA que trabalharem neste repositório.
+> Leia este arquivo inteiro antes de propor mudanças.
 
 ---
 
-## O que é este projeto
+## Visão geral
 
-Frontend web da plataforma **A Bolha Tech** — comunidade curada de IA e Programação com agentes especialistas, companions pessoais e votação estilo Hacker News / Reddit.
+Frontend web da **A Bolha Tech**, construído em **Next.js 15 App Router**, com foco atual em:
 
-**Repositório:** `github.com/abolhatech/bolhatech-frontend`
-**Stack:** Next.js 15 · React 18 · App Router · React Server Components · JavaScript (sem TypeScript no frontend)
+- feed global da comunidade
+- páginas por comunidade
+- detalhe de post
+- listagem e detalhe de agentes
+- camada `/api` interna no padrão BFF
+- fallback local com PostgreSQL quando o backend externo não estiver disponível
 
----
-
-## Stack e dependências críticas
-
-| Pacote | Versão | Uso |
-|--------|--------|-----|
-| `next` | ^15 | Framework principal |
-| `react` | ^18 | UI |
-| `bolhatech-design-system` | ^0.2.x | **Todos** os componentes visuais e tokens |
-
-O design system é transpilado pelo Next.js via `transpilePackages` em `next.config.mjs`.
+O projeto está em uma fase de base funcional, ainda sem autenticação de produto final, votos ou comentários reais expostos na UI.
 
 ---
 
-## Estrutura de diretórios
+## Stack atual
 
-```
+| Item | Valor |
+|------|-------|
+| Framework | Next.js 15 |
+| UI | React 18 |
+| Linguagem | JavaScript |
+| Estilo visual | `bolhatech-design-system` |
+| Dados locais | PostgreSQL via `pg` |
+| Arquitetura | App Router + RSC + Route Handlers |
+
+### Dependências críticas
+
+- `next`
+- `react`
+- `react-dom`
+- `pg`
+- `bolhatech-design-system`
+
+O design system é transpilado via `transpilePackages` em `next.config.mjs`.
+
+---
+
+## Estrutura real do projeto
+
+```txt
 src/
-├── app/                      # Next.js App Router
-│   ├── api/                  # BFF — rotas de API (proxy para o backend)
-│   │   ├── _lib/backend.js   # Client HTTP compartilhado para o backend
-│   │   ├── auth/             # Magic link + session + logout
-│   │   ├── communities/      # Feed global e por comunidade
-│   │   ├── posts/            # Detalhes, votos, comentários
-│   │   ├── agents/           # Agentes e propostas de config
-│   │   └── companions/       # Companion e recomendações
-│   ├── page.jsx              # Home (CommunityHomeContainer)
-│   ├── c/[slug]/             # Página de comunidade
-│   ├── post/[id]/            # Detalhe de post
-│   ├── agentes/[id]/         # Detalhe de agente
-│   ├── companion/            # Companion do usuário
-│   ├── login/                # Autenticação magic link
-│   ├── moderacao/            # Painel de moderação
-│   └── globals.css           # Estilos globais da APP (mínimos)
-│
+├── app/
+│   ├── api/
+│   │   ├── _lib/
+│   │   │   ├── backend.js
+│   │   │   ├── query.js
+│   │   │   ├── response.js
+│   │   │   └── serializers.js
+│   │   ├── agents/
+│   │   ├── communities/
+│   │   ├── health/
+│   │   └── posts/
+│   ├── agentes/
+│   ├── c/
+│   ├── companion/
+│   ├── login/
+│   ├── moderacao/
+│   ├── noticia/
+│   ├── post/
+│   ├── error.jsx
+│   ├── globals.css
+│   ├── layout.jsx
+│   ├── loading.jsx
+│   ├── not-found.jsx
+│   ├── page.jsx
+│   ├── robots.js
+│   └── sitemap.js
 ├── components/
-│   ├── composition/          # Componentes estruturais (SiteChrome, ThemeProviders)
-│   └── shared/               # Componentes compartilhados simples
-│
-└── features/
-    ├── auth/                 # Formulários de login/sessão
-    ├── community/            # Feed, posts, comentários, agentes, companion
-    │   ├── server/           # Data fetching (communityRepository.js)
-    │   ├── components/       # Componentes de apresentação
-    │   ├── containers/       # Orquestradores (server components que buscam dados)
-    │   └── lib/              # Utilitários (formatação de data, etc.)
-    └── news/                 # Seção de notícias (dados estáticos)
+│   ├── composition/
+│   └── shared/
+├── features/
+│   └── community/
+│       ├── components/
+│       ├── containers/
+│       ├── lib/
+│       └── server/
+└── lib/
+    ├── db.js
+    ├── db/
+    └── site.js
 ```
+
+Hoje o domínio principal está concentrado em `features/community`.
 
 ---
 
-## Arquitetura e padrões obrigatórios
+## Arquitetura atual
 
 ### 1. Server Components por padrão
 
-Todo componente é Server Component (RSC) **a menos que precise de estado ou eventos do browser**.
-Só adicione `'use client'` quando for estritamente necessário.
+- Use Server Components sempre que possível.
+- Só use `'use client'` quando houver estado, evento de browser ou integração estritamente client-side.
+- `ThemeProviders` e `ThemeSwitcher` são client components por necessidade.
 
-**Regra de ouro:**
-- `containers/` → sempre Server Components (buscam dados, sem estado)
-- `components/` → maioria Server Components; apenas interativos usam `'use client'`
+### 2. Padrão Container → Component
 
-### 2. Padrão Container / Component
+Fluxo padrão:
 
-```
-Container (server, busca dados) → Component (renderiza dados)
-```
-
-- **Containers** moram em `features/*/containers/`. São `async` e chamam o repository diretamente.
-- **Components** moram em `features/*/components/`. Recebem props, não fazem fetch.
-- **Nunca misture**: um container não deve ter lógica visual complexa; um component não deve fazer fetch.
-
-### 3. Design System — importação correta
-
-```js
-// ✅ Componentes server-safe (RSC, SSR)
-import { NewsCard, Badge, Button, Surface } from 'bolhatech-design-system/server';
-
-// ✅ Componentes com interatividade (use client)
-import { VoteBar, ThemeToggle } from 'bolhatech-design-system/client';
-
-// ❌ NUNCA importe do index raiz em Server Components
-import { VoteBar } from 'bolhatech-design-system'; // pode quebrar RSC
+```txt
+route/page.jsx -> container async -> componentes de apresentação
 ```
 
-### 4. Estilos — somente tokens do DS
+Regras:
 
-- **Nunca** crie classes CSS novas para componentes que o DS já resolve.
-- `globals.css` é para estilos específicos da APP que não fazem sentido no DS (layout de página, `.news-link`, `.back-link`, `.article-content`).
-- Use variáveis CSS do DS: `var(--bolha-text)`, `var(--bolha-surface)`, `var(--bolha-accent)`, etc.
-- Inline styles são aceitáveis para casos pontuais usando tokens do DS.
+- `containers/` fazem orquestração e fetch
+- `components/` recebem props e renderizam
+- `lib/` contém helpers puros
+- `server/` contém acesso a dados
 
-**Tokens disponíveis:**
-```css
---bolha-bg, --bolha-surface, --bolha-surface-hover
---bolha-line, --bolha-line-subtle
---bolha-text, --bolha-muted, --bolha-subtle
---bolha-accent, --bolha-accent-bg, --bolha-accent-text
---bolha-up, --bolha-up-bg, --bolha-down, --bolha-down-bg
---bolha-community-ia, --bolha-community-frontend, --bolha-community-backend, --bolha-community-devops
---bolha-radius-sm (4px), --bolha-radius-md (8px), --bolha-radius-lg (12px)
---bolha-font (Inter)
-```
+### 3. Fonte de dados: backend-first com fallback local
 
-### 5. API layer (BFF)
+Há dois caminhos de dados no projeto:
 
-O frontend **nunca** chama o backend diretamente do browser. O fluxo é:
+1. **BFF interno em `src/app/api`**
+   - tenta usar `BOLHATECH_API_BASE_URL`
+   - lê a sessão `bolha_session`
+   - forwarda `x-user-id` e `x-session-token`
+   - usa fallback local se o backend externo falhar ou não estiver configurado
 
-```
-Browser → Next.js API Route (/api/...) → BOLHATECH_API_BASE_URL (backend AWS)
-```
+2. **Repositórios server-side em `features/community/server`**
+   - hoje consultam PostgreSQL diretamente via `pg`
+   - usam `unstable_cache`
+   - ainda não foram migrados para consumir o backend externo
 
-- `src/app/api/_lib/backend.js` centraliza a autenticação e o fetch.
-- Toda nova rota de API segue o mesmo padrão: lê sessão do cookie `bolha_session`, forwarda para o backend.
-- Variável de ambiente obrigatória: `BOLHATECH_API_BASE_URL`
+Importante:
 
-### 6. Autenticação
+- A UI server-side atual depende do banco local.
+- A camada `/api` já está preparada para o modelo BFF.
+- Não assuma que autenticação completa ou rotas de magic link já existem no código.
 
-- Magic link por e-mail → token → cookie httpOnly `bolha_session`
-- O cookie é lido em Server Components via `cookies()` do Next.js
-- `communityRepository.js` injeta automaticamente o header `x-user-id` em todas as chamadas
-- Usuário não autenticado → `x-user-id: user-guest`
+### 4. App Router
+
+Padrões ativos:
+
+- `generateMetadata()` em páginas relevantes
+- `loading.jsx`, `error.jsx` e `not-found.jsx`
+- `robots.js` e `sitemap.js`
+- `generateStaticParams()` em `/c/[slug]`
+
+### 5. Tema
+
+O projeto usa `BolhaThemeProvider` do design system.
+
+Para evitar flicker entre light/dark:
+
+- o `layout.jsx` injeta um script `beforeInteractive`
+- esse script resolve o tema antes da hidratação
+- não remova isso sem substituir por mecanismo equivalente
 
 ---
 
-## Adicionando features novas
+## Design system
 
-### Nova página
+Importação correta:
 
-1. Crie `src/app/[rota]/page.jsx`
-2. Importe o container correspondente
-3. Adicione `export const dynamic = 'force-dynamic'` se precisar de dados frescos
-4. Adicione `generateMetadata()` para SEO
-
-### Nova feature
-
-Siga a estrutura de `features/community`:
-
-```
-features/nova-feature/
-├── server/         # repository.js — data fetching
-├── components/     # componentes de apresentação
-├── containers/     # orquestradores (server async)
-└── lib/            # utilitários (formatação, etc.)
+```js
+import { Badge, NewsCard, SectionHeading } from 'bolhatech-design-system/server';
+import { ThemeToggle } from 'bolhatech-design-system/client';
 ```
 
-### Novo componente visual
+Evite:
 
-Se o componente for reutilizável em outras apps → adicione ao **design system** (`bolhatech-design-system`), não aqui.
-Se for específico desta app → crie em `features/*/components/`.
+```js
+import { VoteBar } from 'bolhatech-design-system';
+```
+
+Regras:
+
+- Preserve o visual do DS
+- `globals.css` só deve conter complementos específicos da app
+- use tokens CSS existentes
+- não introduza Tailwind, CSS Modules ou styled-components
 
 ---
 
-## Padrões proibidos
+## Rotas atuais
 
-```js
-// ❌ Não use styled-components, Tailwind ou CSS modules
-// ❌ Não faça fetch no browser sem passar pelo /api/
-// ❌ Não crie tokens de cor, fonte ou espaçamento hardcoded
-// ❌ Não use border-radius, box-shadow ou backdrop-filter diretamente — use classes do DS
-// ❌ Não importe 'bolhatech-design-system' root em Server Components que usam VoteBar
-// ❌ Não adicione glassmorphism (backdrop-filter: blur) — foi removido intencionalmente
-// ❌ Não use Sora ou Instrument Sans — a fonte do sistema é Inter
+### Páginas
+
+- `/`
+- `/agentes`
+- `/agentes/[id]`
+- `/c/[slug]`
+- `/post/[id]`
+- `/noticia/[slug]`
+- `/login`
+- `/companion`
+- `/moderacao`
+
+### API interna
+
+- `GET /api`
+- `GET /api/health`
+- `GET /api/communities`
+- `GET /api/communities/feed`
+- `GET /api/agents`
+- `GET /api/agents/:id`
+- `GET /api/posts/:id`
+
+As respostas da API seguem envelope:
+
+```json
+{
+  "data": {},
+  "meta": {}
+}
 ```
+
+ou, em erro:
+
+```json
+{
+  "error": {
+    "message": "..."
+  }
+}
+```
+
+---
+
+## Comunidades suportadas
+
+Slugs conhecidos:
+
+- `ia`
+- `frontend`
+- `backend`
+- `devops`
+
+Helpers importantes:
+
+- `getCommunitySlug`
+- `getCommunityLabel`
+- `getCommunityPath`
+- `communityVariant`
+
+Arquivo central:
+
+- `src/features/community/lib/communityTaxonomy.js`
 
 ---
 
 ## Variáveis de ambiente
 
-| Variável | Obrigatória | Descrição |
-|----------|-------------|-----------|
-| `BOLHATECH_API_BASE_URL` | ✅ | URL base do backend AWS (ex: `https://api.abolhatech.com`) |
+| Variável | Obrigatória | Uso |
+|----------|-------------|-----|
+| `DB_HOST` | para fallback local | PostgreSQL |
+| `DB_PORT` | opcional | Porta do PostgreSQL |
+| `DB_NAME` | para fallback local | Banco |
+| `DB_USER` | para fallback local | Usuário |
+| `DB_PASSWORD` | para fallback local | Senha |
+| `BOLHATECH_API_BASE_URL` | recomendada | Backend externo do BFF |
+| `NEXT_PUBLIC_SITE_URL` | opcional | URL canônica para metadata |
+| `SITE_URL` | opcional | fallback de URL canônica |
+
+Observação:
+
+- sem banco configurado, as páginas server-side podem falhar
+- sem `BOLHATECH_API_BASE_URL`, a camada `/api` usa fallback local
 
 ---
 
 ## Comandos
 
 ```bash
-npm run dev      # dev server em http://localhost:3000
-npm run build    # build de produção
-npm run start    # server de produção após build
+npm install
+npm run dev
+npm run build
+npm run start
 ```
 
----
-
-## Integração com outros projetos
-
-| Projeto | Relação |
-|---------|---------|
-| `bolhatech-design-system` | Dependência npm — todos os componentes visuais |
-| `bolhatech-backend` | API consumida via BFF (variável BOLHATECH_API_BASE_URL) |
-| `bolhatech-infra` | Deploy via Terraform — não altere infra por aqui |
+Não há lint nem test runner configurados em `package.json` neste momento.
 
 ---
 
-## Comunidades conhecidas
+## Boas práticas obrigatórias
 
-Os slugs de comunidade definidos são: `ia`, `frontend`, `backend`, `devops`.
-Cada um tem cor própria via `--bolha-community-<slug>` e `--bolha-community-<slug>-bg`.
-Use `communityVariant(slug)` do DS para mapear slug → variante de Badge.
+- Não invente contratos de backend que não estejam no código
+- Não remova fallback local da API sem alinhar a camada server-side junto
+- Não copie componentes do design system para dentro desta repo
+- Não adicione TypeScript no frontend sem contexto explícito
+- Não quebre RSC importando componentes client-only no servidor
+- Não reverta o bootstrap do tema sem corrigir o flicker de outra forma
 
 ---
 
-## Decisões de arquitetura (não reverta sem contexto)
+## Mudanças futuras: como pensar
 
-- **Sem TypeScript no frontend** — JavaScript puro por escolha do time
-- **App Router sem Pages Router** — migração completa para RSC
-- **BFF obrigatório** — evita expor credenciais AWS no browser
-- **Design system como pacote npm** — não copie componentes para dentro desta repo
-- **Layout 3 colunas** — sidebar esquerda (SidebarNav) + main + aside direita reservada
-- **Sem glassmorphism** — visual limpo, surfaces sólidas
+Ao planejar novas features:
+
+- considere impacto em **frontend, BFF e backend externo**
+- defina se a feature nasce em **route handler**, **repository**, **container** ou **design system**
+- valide se a feature precisa ser **backend-first** ou pode começar em **fallback local**
+- explicite SEO, loading states, error states e estratégia de cache
+
+---
+
+## Decisões atuais que não devem ser revertidas sem contexto
+
+- JavaScript sem TypeScript
+- App Router
+- uso obrigatório do design system
+- BFF interno em `src/app/api`
+- fallback local com PostgreSQL
+- layout em 3 colunas com sidebar à esquerda
+- tema com bootstrap antecipado para evitar flicker

@@ -23,6 +23,18 @@ Observação: o registro `links.abolhatech.com.br` pode continuar apontando para
 No AWS Amplify (Environment variables da branch `main`):
 
 - `BOLHATECH_API_BASE_URL` (URL pública do backend API Gateway, ex.: `https://xxxx.execute-api.us-east-1.amazonaws.com`)
+- `DB_HOST` (endpoint do PostgreSQL/RDS)
+- `DB_PORT` (normalmente `5432`)
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `NEXT_PUBLIC_SITE_URL` (ex.: `https://abolhatech.com.br`)
+
+Importante:
+
+- este projeto hoje ainda usa PostgreSQL diretamente nas páginas server-side
+- por isso não basta configurar as envs no painel do Amplify; elas também precisam ser propagadas para o `.env.production` durante o build
+- o `amplify.yml` deste repositório já foi ajustado para copiar essas variáveis
 
 ## Fluxo
 

@@ -1,3 +1,4 @@
+-- Active: 1774818816478@@bolhatech-prod-postgres.czrnxshi5e5k.us-east-1.rds.amazonaws.com@5432@bolhatech
 # CLAUDE.md
 
 This repository is a **Next.js 15 App Router** application for the A Bolha Tech community.
@@ -17,7 +18,7 @@ The current app already includes:
 - SEO metadata, sitemap, robots, loading and error boundaries
 - dark/light theme with early bootstrap to avoid flicker
 
-The codebase does **not** currently contain the full product surface described in older docs, such as complete auth flows, moderation tools, or companion logic.
+The codebase does **not** currently contain the full product surface described in older docs, such as complete auth flows, moderation tools, or logic.
 
 ## Core stack
 
@@ -134,8 +135,6 @@ Pages:
 - `/post/[id]`
 - `/noticia/[slug]`
 - `/login`
-- `/companion`
-- `/moderacao`
 
 API:
 

@@ -46,7 +46,7 @@ export const GET = apiRoute(async function GET(request) {
       const slug = getCommunitySlug(slugParam);
 
       if (!slug) {
-        return apiError(404, 'Comunidade não encontrada.');
+        return apiError(404, 'Assunto não encontrada.');
       }
 
       const items = (await getCommunityFeed(slug, limit)).map(serializePost);

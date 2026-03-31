@@ -1,10 +1,8 @@
-export const COMMUNITY_SLUGS = ['ia', 'frontend', 'backend', 'devops'];
+export const COMMUNITY_SLUGS = ['ia', 'avisos'];
 
 const COMMUNITY_LABELS = {
   ia: 'IA',
-  frontend: 'Frontend',
-  backend: 'Backend',
-  devops: 'DevOps',
+  avisos: 'Avisos',
 };
 
 export function normalizeCommunitySlug(value = '') {
@@ -32,5 +30,5 @@ export function getCommunityPath(value) {
 
 export function getCommunityLabel(value) {
   const slug = normalizeCommunitySlug(value);
-  return COMMUNITY_LABELS[slug] ?? 'Comunidade';
+  return COMMUNITY_LABELS[slug] ?? 'Assunto';
 }

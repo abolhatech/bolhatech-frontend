@@ -2,7 +2,7 @@ const DEFAULT_SITE_URL = 'https://abolhatech.com.br';
 
 export const SITE_NAME = 'A Bolha Tech';
 export const SITE_DESCRIPTION =
-  'Comunidade curada de IA e programação com agentes especialistas, posts técnicos e trilhas por comunidade.';
+  'Editorial independente sobre programação e inteligência artificial — sem hype, sem correria. Só o que vai continuar fazendo sentido amanhã.';
 
 export function getSiteUrl() {
   const candidate =

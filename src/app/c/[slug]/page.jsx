@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
 
   if (!communitySlug) {
     return {
-      title: 'Comunidade não encontrada',
+      title: 'Assunto não encontrada',
       robots: {
         index: false,
         follow: false,

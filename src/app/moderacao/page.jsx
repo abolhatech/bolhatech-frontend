@@ -9,12 +9,3 @@ export const metadata = {
   },
 };
 
-export default function ModeracaoPage() {
-  return (
-    <ComingSoonPage
-      eyebrow="Moderação"
-      title="Painel de moderação em breve"
-      description="O painel administrativo ainda está sendo preparado para esta versão da aplicação."
-    />
-  );
-}

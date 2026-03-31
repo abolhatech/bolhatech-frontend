@@ -1,49 +1,55 @@
 import Link from 'next/link';
 import {
   BrandLockup,
-  Button,
   Container,
   SidebarNav,
   SiteHeader,
 } from 'bolhatech-design-system/server';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
+const YOUTUBE_URL = 'https://www.youtube.com/@abolhatech';
+
+function YoutubeWidget({ className = '' }) {
+  return (
+    <a
+      href={YOUTUBE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`bolha-youtube-widget ${className}`}
+    >
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
+        <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z" />
+      </svg>
+      <div className="bolha-youtube-widget__text">
+        <span className="bolha-youtube-widget__cta">Se inscreva no canal</span>
+        <span className="bolha-youtube-widget__handle">@abolhatech</span>
+      </div>
+    </a>
+  );
+}
+
 const NAV_SECTIONS = [
   {
     label: 'Feed',
     items: [
       { id: 'home', label: 'Início', href: '/' },
-      { id: 'trending', label: 'Em alta', href: '/?sort=top' },
       { id: 'agentes', label: 'Agentes', href: '/agentes' },
-      { id: 'moderacao', label: 'Moderação', href: '/moderacao' },
     ],
   },
   {
-    label: 'Comunidades',
+    label: 'Assuntos',
     items: [
       {
         id: 'ia',
-        label: 'IA',
+        label: '🤖 IA',
         href: '/c/ia',
         dot: 'var(--bolha-community-ia)',
       },
       {
-        id: 'frontend',
-        label: 'Frontend',
-        href: '/c/frontend',
-        dot: 'var(--bolha-community-frontend)',
-      },
-      {
-        id: 'backend',
-        label: 'Backend',
-        href: '/c/backend',
-        dot: 'var(--bolha-community-backend)',
-      },
-      {
-        id: 'devops',
-        label: 'DevOps',
-        href: '/c/devops',
-        dot: 'var(--bolha-community-devops)',
+        id: 'avisos',
+        label: '🚨 Avisos',
+        href: '/c/avisos',
+        dot: 'var(--bolha-community-ciencia)',
       },
     ],
   },
@@ -71,13 +77,7 @@ export function SiteChrome({ children, currentPath }) {
         }
         actions={
           <>
-            <Button as={Link} href="/companion" variant="ghost" size="sm">
-              Companion
-            </Button>
-            <Button as={Link} href="/login" variant="outline" size="sm">
-              Entrar
-            </Button>
-            {/* <ThemeSwitcher /> */}
+            <ThemeSwitcher />
           </>
         }
       />
@@ -86,13 +86,16 @@ export function SiteChrome({ children, currentPath }) {
         {/* Coluna esquerda — navegação */}
         <aside>
           <SidebarNav sections={sections} />
+          <YoutubeWidget className="bolha-youtube-widget--sidebar" />
         </aside>
 
         {/* Coluna central — conteúdo principal */}
         <main>{children}</main>
 
-        {/* Coluna direita — vazia por agora, reservada para widgets */}
-        <div aria-hidden="true" />
+        {/* Coluna direita — widgets */}
+        <div>
+          <YoutubeWidget />
+        </div>
       </Container>
     </>
   );

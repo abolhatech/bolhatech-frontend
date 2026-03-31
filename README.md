@@ -31,7 +31,7 @@ Funcionalidades ainda não implementadas de forma completa:
 - autenticação final com magic link
 - votos
 - comentários reais
-- companion funcional
+- funcional
 - moderação funcional
 
 ## Como rodar

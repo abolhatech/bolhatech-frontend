@@ -60,9 +60,7 @@ src/
 │   │   └── posts/
 │   ├── agentes/
 │   ├── c/
-│   ├── companion/
 │   ├── login/
-│   ├── moderacao/
 │   ├── noticia/
 │   ├── post/
 │   ├── error.jsx
@@ -192,8 +190,6 @@ Regras:
 - `/post/[id]`
 - `/noticia/[slug]`
 - `/login`
-- `/companion`
-- `/moderacao`
 
 ### API interna
 

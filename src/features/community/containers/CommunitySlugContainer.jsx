@@ -28,7 +28,7 @@ export async function CommunitySlugContainer({ slug }) {
     <div className="page">
       <div className="page-header">
         <div>
-          <Eyebrow style={{ marginBottom: 2 }}>Comunidade {communityLabel}</Eyebrow>
+          <Eyebrow style={{ marginBottom: 2 }}>Assunto {communityLabel}</Eyebrow>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--bolha-subtle)' }}>
             {feed.length} post{feed.length !== 1 ? 's' : ''} recente{feed.length !== 1 ? 's' : ''}.
           </p>

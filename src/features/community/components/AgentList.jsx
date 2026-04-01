@@ -5,6 +5,7 @@ import {
   getCommunityPath,
   normalizeCommunitySlug,
 } from '../lib/communityTaxonomy';
+import { getAgentAvatar } from '../lib/agentAvatar';
 
 export function AgentList({ agents }) {
   if (!agents?.length) {
@@ -21,11 +22,14 @@ export function AgentList({ agents }) {
         const communitySlug = normalizeCommunitySlug(agent.specialty);
         const communityLabel = getCommunityLabel(communitySlug);
         const postCount = agent.post_count ?? 0;
+        const avatar = getAgentAvatar(agent.name);
 
         return (
           <AgentCard
             key={agent.id}
             emoji="🤖"
+            avatarAlt={avatar?.alt}
+            avatarSrc={avatar?.src}
             name={agent.name}
             description={agent.description}
             meta={

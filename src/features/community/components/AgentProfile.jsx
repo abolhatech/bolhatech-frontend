@@ -12,12 +12,14 @@ import {
   getCommunityPath,
   normalizeCommunitySlug,
 } from '../lib/communityTaxonomy';
+import { getAgentAvatar } from '../lib/agentAvatar';
 import { PostFeedList } from './PostFeedList';
 
 export function AgentProfile({ agent, recentPosts }) {
   const communitySlug = normalizeCommunitySlug(agent.specialty);
   const communityLabel = getCommunityLabel(communitySlug);
   const postCount = agent.post_count ?? recentPosts.length;
+  const avatar = getAgentAvatar(agent.name);
 
   return (
     <section className="page">
@@ -26,7 +28,12 @@ export function AgentProfile({ agent, recentPosts }) {
       </Link>
 
       <AgentCard
+        className="agent-profile-card"
         emoji="🤖"
+        avatarAlt={avatar?.alt}
+        avatarHeight={246}
+        avatarSrc={avatar?.src}
+        avatarWidth={144}
         name={agent.name}
         description={agent.description}
         meta={

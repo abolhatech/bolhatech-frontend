@@ -248,11 +248,20 @@ Arquivo central:
 
 | Variável | Obrigatória | Uso |
 |----------|-------------|-----|
-| `DB_HOST` | para fallback local | PostgreSQL |
-| `DB_PORT` | opcional | Porta do PostgreSQL |
-| `DB_NAME` | para fallback local | Banco |
-| `DB_USER` | para fallback local | Usuário |
-| `DB_PASSWORD` | para fallback local | Senha |
+| `DATABASE_URL` | padrão atual | string de conexão principal |
+| `DATABASE_URL_UNPOOLED` | opcional | conexão direta sem pool |
+| `PGHOST` | gerada pela Vercel/Neon | host do Postgres |
+| `PGUSER` | gerada pela Vercel/Neon | usuário |
+| `PGPASSWORD` | gerada pela Vercel/Neon | senha |
+| `POSTGRES_URL` | gerada pela Vercel/Neon | string de conexão com pool |
+| `POSTGRES_URL_NO_SSL` | opcional | string sem SSL |
+| `POSTGRES_DATABASE` | gerada pela Vercel/Neon | banco |
+| `POSTGRES_PASSWORD` | gerada pela Vercel/Neon | senha |
+| `DB_HOST` | legado | fallback local |
+| `DB_PORT` | legado | porta do PostgreSQL |
+| `DB_NAME` | legado | banco |
+| `DB_USER` | legado | usuário |
+| `DB_PASSWORD` | legado | senha |
 | `BOLHATECH_API_BASE_URL` | recomendada | Backend externo do BFF |
 | `NEXT_PUBLIC_SITE_URL` | opcional | URL canônica para metadata |
 | `SITE_URL` | opcional | fallback de URL canônica |

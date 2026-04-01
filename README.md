@@ -24,7 +24,7 @@ Funcionalidades implementadas:
 - redirect legado em `/noticia/[slug]`
 - API interna em `/api`
 - metadata, sitemap, robots, `loading.jsx` e `error.jsx`
-- suporte a tema light/dark sem flicker inicial
+- tema temporariamente fixado em light mode
 
 Funcionalidades ainda não implementadas de forma completa:
 
@@ -49,6 +49,13 @@ npm run build
 npm run start
 ```
 
+Banco:
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
 ## Variáveis de ambiente
 
 ### Backend-first BFF
@@ -57,15 +64,31 @@ npm run start
 
 Quando configurada, a camada `/api` tenta consumir o backend externo primeiro.
 
-### Fallback local
+### Banco de dados
+
+- `DATABASE_URL`
+- `DATABASE_URL_UNPOOLED`
+- `PGHOST`
+- `PGUSER`
+- `PGPASSWORD`
+- `POSTGRES_URL`
+- `POSTGRES_URL_NO_SSL`
+- `POSTGRES_DATABASE`
+- `POSTGRES_PASSWORD`
+
+Essas são as variáveis geradas automaticamente pela integração Vercel + Neon e são o padrão esperado do projeto.
+
+Fallbacks aceitos por compatibilidade:
 
 - `DB_HOST`
 - `DB_PORT`
 - `DB_NAME`
 - `DB_USER`
 - `DB_PASSWORD`
+- `POSTGRES_*`
+- `PG*`
 
-Essas variáveis alimentam o fallback local via PostgreSQL e também o acesso server-side atual usado pelas páginas.
+O app prioriza `DATABASE_URL` e só cai nesses formatos quando ela não estiver definida.
 
 ### Metadata
 
@@ -74,17 +97,60 @@ Essas variáveis alimentam o fallback local via PostgreSQL e também o acesso se
 
 Usadas para canonical URL, Open Graph, `robots.txt` e `sitemap.xml`.
 
+### Email e cron
+
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `CRON_SECRET`
+
+Usadas para:
+
+- enviar o email de boas-vindas da newsletter via Resend
+- proteger o endpoint de cron diário em `/api/cron/newsletter`
+
 ### Exemplo
 
 ```bash
 BOLHATECH_API_BASE_URL=https://api.abolhatech.com
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=bolhatech
-DB_USER=bolhatech
-DB_PASSWORD=sua-senha
+DATABASE_URL=postgresql://usuario:senha@host/neondb?sslmode=require
+DATABASE_URL_UNPOOLED=postgresql://usuario:senha@host-direto/neondb?sslmode=require
+PGHOST=host
+PGUSER=usuario
+PGPASSWORD=sua-senha
+POSTGRES_URL=postgresql://usuario:senha@host/neondb?sslmode=require
+POSTGRES_URL_NO_SSL=postgresql://usuario:senha@host/neondb
+POSTGRES_DATABASE=neondb
+POSTGRES_PASSWORD=sua-senha
 NEXT_PUBLIC_SITE_URL=https://abolhatech.com.br
+SITE_URL=https://abolhatech.com.br
+RESEND_API_KEY=re_xxxxxxxxx
+RESEND_FROM_EMAIL="Margaret <newsletter@abolhatech.com.br>"
+CRON_SECRET=troque-por-um-segredo-longo
 ```
+
+## Vercel
+
+O projeto está pronto para deploy na Vercel.
+
+Arquivos relevantes:
+
+- [`vercel.json`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/vercel.json)
+- [`src/app/api/cron/newsletter/route.js`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/src/app/api/cron/newsletter/route.js)
+
+Configuração atual:
+
+- cron diário configurado para `0 12 * * *`
+- isso corresponde a `09:00` no fuso `America/Sao_Paulo`
+- a Vercel executa cron apenas em produção
+
+Passos sugeridos:
+
+1. Criar/importar o projeto na Vercel.
+2. Configurar as env vars automáticas do Neon no projeto e no `.env.local`.
+3. Rodar `npm run db:seed` uma vez apontando para o banco Neon.
+4. Apontar o domínio `abolhatech.com.br`.
+5. Publicar o `bolhatech-design-system@0.3.1` antes do deploy do frontend, se o app em produção ainda estiver resolvendo a versão publicada do pacote.
+6. Fazer o primeiro deploy em produção.
 
 ## Arquitetura
 

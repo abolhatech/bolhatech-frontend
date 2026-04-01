@@ -42,11 +42,15 @@ There is no configured lint or test script right now.
 Relevant variables:
 
 - `BOLHATECH_API_BASE_URL`: external backend used by the internal BFF
-- `DB_HOST`
-- `DB_PORT`
-- `DB_NAME`
-- `DB_USER`
-- `DB_PASSWORD`
+- `DATABASE_URL`
+- `DATABASE_URL_UNPOOLED`
+- `PGHOST`
+- `PGUSER`
+- `PGPASSWORD`
+- `POSTGRES_URL`
+- `POSTGRES_URL_NO_SSL`
+- `POSTGRES_DATABASE`
+- `POSTGRES_PASSWORD`
 - `NEXT_PUBLIC_SITE_URL`
 - `SITE_URL`
 
@@ -54,6 +58,7 @@ Behavior:
 
 - `/api` routes are **backend-first** and fall back to local data
 - server-side feature repositories still read from PostgreSQL directly
+- prefer the Vercel/Neon variables above; `DB_*` remains legacy-only compatibility
 
 ## Architecture
 

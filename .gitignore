@@ -9,3 +9,4 @@ infra/terraform/*.tfvars
 infra/terraform/.terraform/
 infra/terraform/.terraform.lock.hcl
 infra/terraform/terraform.tfstate*
+.vercel

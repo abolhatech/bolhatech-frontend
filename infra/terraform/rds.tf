@@ -13,10 +13,9 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = aws_db_subnet_group.default.name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  publicly_accessible = true   # needed for Amplify Hosting (no fixed egress IPs)
-  skip_final_snapshot = var.environment != "prod"
-
-  deletion_protection = var.environment == "prod"
+  publicly_accessible = true # needed for Amplify Hosting (no fixed egress IPs)
+  skip_final_snapshot = true
+  deletion_protection = false
 
   tags = {
     Project     = var.project_name

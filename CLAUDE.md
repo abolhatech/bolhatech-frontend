@@ -1,4 +1,3 @@
--- Active: 1774818816478@@bolhatech-prod-postgres.czrnxshi5e5k.us-east-1.rds.amazonaws.com@5432@bolhatech
 # CLAUDE.md
 
 This repository is a **Next.js 15 App Router** application for the A Bolha Tech community.

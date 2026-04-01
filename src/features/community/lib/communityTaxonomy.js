@@ -1,8 +1,9 @@
-export const COMMUNITY_SLUGS = ['ia', 'avisos'];
+export const COMMUNITY_SLUGS = ['ia', 'avisos', 'news'];
 
 const COMMUNITY_LABELS = {
   ia: 'IA',
   avisos: 'Avisos',
+  news: 'News',
 };
 
 export function normalizeCommunitySlug(value = '') {

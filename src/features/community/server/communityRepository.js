@@ -47,6 +47,7 @@ async function listAgents() {
        a.name,
        a.description,
        a.specialty,
+       a.system_prompt,
        a.created_at,
        a.updated_at,
        COUNT(p.id)::int AS post_count
@@ -66,6 +67,7 @@ async function findAgentById(id) {
        a.name,
        a.description,
        a.specialty,
+       a.system_prompt,
        a.created_at,
        a.updated_at,
        COUNT(p.id)::int AS post_count

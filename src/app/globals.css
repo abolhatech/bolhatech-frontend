@@ -193,53 +193,181 @@ body {
   display: none;
 }
 
-/* ─── YouTube Widget ─── */
-
-.bolha-youtube-widget {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
+.bolha-sidebar-promo-card {
+  display: none;
   margin-top: 16px;
-  border: 1px solid var(--bolha-line);
-  border-radius: var(--bolha-radius-md);
-  background: var(--bolha-surface);
-  color: #ff0000;
-  text-decoration: none;
-  transition: border-color 120ms ease, background 120ms ease;
 }
 
-.bolha-youtube-widget:hover {
-  border-color: #ff0000;
-  background: var(--bolha-surface-hover);
+.bolha-layout > div:last-child > .bolha-promo-card:first-child {
+  margin-top: 20px;
+  margin-bottom: 12px;
 }
 
-.bolha-youtube-widget__text {
+.newsletter-page {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
 }
 
-.bolha-youtube-widget__cta {
-  font-size: 13px;
+.newsletter-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.newsletter-page__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bolha-subtle);
+}
+
+.newsletter-page__title {
+  margin: 0;
+  max-width: 11ch;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.newsletter-page__lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--bolha-subtle);
+}
+
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--bolha-radius-lg);
+  background: rgba(15, 23, 42, 0.32);
+}
+
+.newsletter-form__label {
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--bolha-text);
-  line-height: 1.3;
 }
 
-.bolha-youtube-widget__handle {
-  font-size: 12px;
-  color: var(--bolha-muted);
+.newsletter-form__field {
+  width: 100%;
 }
 
-/* na sidebar esquerda só aparece em telas médias (quando a direita some) */
-.bolha-youtube-widget--sidebar {
-  display: none;
+.newsletter-form__input {
+  min-height: 48px;
+}
+
+.newsletter-form__field .bolha-input {
+  border-color: rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.55);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.newsletter-form__field .bolha-input:focus {
+  border-color: rgba(191, 219, 254, 0.55);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.16);
+}
+
+.newsletter-form__actions {
+  display: flex;
+}
+
+.newsletter-form__button {
+  min-height: 46px;
+  padding-inline: 20px;
+}
+
+.newsletter-form__button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.newsletter-form__button:disabled,
+.newsletter-form__field .bolha-input:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.newsletter-form__feedback {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.newsletter-form__feedback--success {
+  color: #c7f9cc;
+}
+
+.newsletter-form__feedback--error {
+  color: #fda4af;
+}
+
+.newsletter-page__backlink {
+  margin: 0;
+  line-height: 1.65;
+  color: var(--bolha-subtle);
+}
+
+.newsletter-page__backlink a {
+  color: var(--bolha-text);
+}
+
+[data-theme='light'] .newsletter-form {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+}
+
+[data-theme='light'] .newsletter-form__field .bolha-input {
+  border-color: rgba(148, 163, 184, 0.32);
+  background: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme='light'] .newsletter-form__field .bolha-input::placeholder {
+  color: #94a3b8;
+}
+
+[data-theme='light'] .newsletter-form__field .bolha-input:focus {
+  border-color: rgba(71, 85, 105, 0.45);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.14);
+}
+
+[data-theme='light'] .newsletter-page__backlink,
+[data-theme='light'] .newsletter-page__lede {
+  color: #64748b;
+}
+
+[data-theme='light'] .newsletter-form__feedback--success {
+  color: #15803d;
+}
+
+[data-theme='light'] .newsletter-form__feedback--error {
+  color: #be123c;
 }
 
 @media (max-width: 1024px) {
-  .bolha-youtube-widget--sidebar {
+  .bolha-sidebar-promo-card {
     display: flex;
+  }
+}
+
+@media (max-width: 900px) {
+  .newsletter-form__actions {
+    display: block;
+  }
+
+  .newsletter-form__button {
+    width: 100%;
   }
 }
 

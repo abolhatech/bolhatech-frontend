@@ -13,6 +13,7 @@ export const GET = apiRoute(async function GET() {
         '/api/agents',
         '/api/agents/:id',
         '/api/posts/:id',
+        '/api/newsletter',
       ],
     },
     {

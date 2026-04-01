@@ -23,7 +23,7 @@ export function NewsletterSignupForm() {
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       setFeedback({
         type: 'error',
-        message: 'Digite um email valido. Sem press release, sem typo.',
+        message: 'Digite um email válido. Sem press release, sem typo.',
       });
       return;
     }
@@ -42,7 +42,7 @@ export function NewsletterSignupForm() {
 
         if (!response.ok) {
           throw new Error(
-            payload?.error?.message ?? 'Nao foi possivel registrar sua inscricao agora.'
+            payload?.error?.message ?? 'Não foi possível registrar sua inscrição agora.'
           );
         }
 

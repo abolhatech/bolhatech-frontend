@@ -7,23 +7,13 @@ import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from '@/lib/site';
 
 const THEME_BOOTSTRAP_SCRIPT = `
   (() => {
-    const storageKey = 'abolhatech-theme';
-    const attribute = 'data-theme';
     const root = document.documentElement;
-    const storedMode = window.localStorage.getItem(storageKey);
-    const mode =
-      storedMode === 'light' || storedMode === 'dark' || storedMode === 'system'
-        ? storedMode
-        : 'system';
-    const resolvedTheme =
-      mode === 'system'
-        ? window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        : mode;
+    root.setAttribute('data-theme', 'light');
+    root.style.colorScheme = 'light';
 
-    root.setAttribute(attribute, resolvedTheme);
-    root.style.colorScheme = resolvedTheme;
+    try {
+      window.localStorage.setItem('abolhatech-theme', 'light');
+    } catch {}
   })();
 `;
 
@@ -61,11 +51,8 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
-    { media: '(prefers-color-scheme: dark)', color: '#111827' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f7f8fa',
 };
 
 export default function RootLayout({ children }) {

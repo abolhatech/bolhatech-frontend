@@ -21,7 +21,8 @@ export async function createNewsletterSubscriber(email) {
        DO UPDATE SET
          status = 'active',
          agent_name = 'Margaret',
-         source = 'site'
+         source = 'site',
+         subscribed_at = now()
        RETURNING id, email, status, subscribed_at
      )
      SELECT

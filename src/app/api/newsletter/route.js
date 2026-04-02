@@ -1,5 +1,5 @@
 import { createNewsletterSubscriber } from '@/features/newsletter/server/newsletterRepository';
-import { sendNewsletterWelcomeEmail } from '@/features/newsletter/server/newsletterEmail';
+import { sendNewsletterWelcomeEmailForSubscriber } from '@/features/newsletter/server/newsletterEmail';
 import { apiError, apiRoute, apiSuccess } from '../_lib/response';
 
 export const runtime = 'nodejs';
@@ -30,7 +30,7 @@ export const POST = apiRoute(async function POST(request) {
 
   if (shouldSendWelcomeEmail) {
     try {
-      welcomeEmail = await sendNewsletterWelcomeEmail(email);
+      welcomeEmail = await sendNewsletterWelcomeEmailForSubscriber(subscriber);
     } catch (error) {
       console.error('[newsletter] erro ao enviar email de boas-vindas:', error);
       welcomeEmail = {

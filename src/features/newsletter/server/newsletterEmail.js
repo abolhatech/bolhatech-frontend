@@ -102,7 +102,21 @@ function buildWelcomeEmailText() {
 }
 
 export async function sendNewsletterWelcomeEmail(email) {
+  return sendNewsletterWelcomeEmailForSubscriber({ email });
+}
+
+function buildIdempotencyKey(subscriber) {
+  const normalizedEmail = String(subscriber.email || '').trim().toLowerCase();
+  const subscribedAt = subscriber.subscribed_at
+    ? new Date(subscriber.subscribed_at).toISOString()
+    : 'no-subscription-timestamp';
+
+  return `newsletter-welcome:${subscriber.id || normalizedEmail}:${subscribedAt}`;
+}
+
+export async function sendNewsletterWelcomeEmailForSubscriber(subscriber) {
   const { apiKey, from } = getResendConfig();
+  const email = String(subscriber?.email || '').trim().toLowerCase();
 
   if (!apiKey) {
     console.warn('[newsletter] RESEND_API_KEY não configurada; pulando email de boas-vindas');
@@ -114,7 +128,7 @@ export async function sendNewsletterWelcomeEmail(email) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'Idempotency-Key': `newsletter-welcome:${email}`,
+      'Idempotency-Key': buildIdempotencyKey(subscriber),
     },
     body: JSON.stringify({
       from,

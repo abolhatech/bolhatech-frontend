@@ -5,6 +5,8 @@ import {
   getCommunityLabel,
   getCommunitySlug,
 } from '@/features/community/lib/communityTaxonomy';
+import { getCommunityFeed } from '@/features/community/server/communityRepository';
+import { getCollectionPageJsonLd, serializeJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,5 +52,25 @@ export default async function CommunityPage({ params }) {
     notFound();
   }
 
-  return <CommunitySlugContainer slug={communitySlug} />;
+  const communityLabel = getCommunityLabel(communitySlug);
+  const posts = await getCommunityFeed(communitySlug, 8).catch(() => []);
+  const jsonLd = getCollectionPageJsonLd({
+    path: `/c/${communitySlug}`,
+    name: communityLabel,
+    description: `Posts, análises e discussões recentes da comunidade ${communityLabel}.`,
+    items: posts.map((post) => ({
+      name: post.title,
+      path: `/post/${post.id}`,
+    })),
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
+      <CommunitySlugContainer slug={communitySlug} />
+    </>
+  );
 }

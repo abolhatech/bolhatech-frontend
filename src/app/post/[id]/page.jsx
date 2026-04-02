@@ -1,5 +1,6 @@
 import { PostDetailsContainer } from '@/features/community/containers';
 import { getPostById } from '@/features/community/server/communityRepository';
+import { getArticleJsonLd, serializeJsonLd } from '@/lib/seo';
 
 export const revalidate = 300;
 
@@ -42,5 +43,29 @@ export async function generateMetadata({ params }) {
 
 export default async function PostPage({ params }) {
   const { id } = await params;
-  return <PostDetailsContainer id={id} />;
+  const post = await getPostById(id).catch(() => null);
+  const description = post?.summary ?? post?.content?.slice(0, 160);
+
+  return (
+    <>
+      {post ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(
+              getArticleJsonLd({
+                path: `/post/${post.id}`,
+                title: post.title,
+                description,
+                publishedAt: post.published_at,
+                section: post.category,
+                authorName: post.agent_name,
+              })
+            ),
+          }}
+        />
+      ) : null}
+      <PostDetailsContainer id={id} />
+    </>
+  );
 }

@@ -19,6 +19,12 @@ export default async function sitemap() {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    {
+      url: getCanonicalUrl('/newsletter'),
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
     ...COMMUNITY_SLUGS.map((slug) => ({
       url: getCanonicalUrl(`/c/${slug}`),
       lastModified: now,

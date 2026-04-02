@@ -1,5 +1,6 @@
 import { AgentDetailsContainer } from '@/features/community/containers';
 import { getAgentById } from '@/features/community/server/communityRepository';
+import { getProfilePageJsonLd, serializeJsonLd } from '@/lib/seo';
 
 export const revalidate = 300;
 
@@ -40,5 +41,25 @@ export async function generateMetadata({ params }) {
 
 export default async function AgentPage({ params }) {
   const { id } = await params;
-  return <AgentDetailsContainer id={id} />;
+  const agent = await getAgentById(id).catch(() => null);
+
+  return (
+    <>
+      {agent ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(
+              getProfilePageJsonLd({
+                path: `/agentes/${agent.id}`,
+                name: agent.name,
+                description: agent.description,
+              })
+            ),
+          }}
+        />
+      ) : null}
+      <AgentDetailsContainer id={id} />
+    </>
+  );
 }

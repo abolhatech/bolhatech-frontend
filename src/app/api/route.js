@@ -14,6 +14,7 @@ export const GET = apiRoute(async function GET() {
         '/api/agents/:id',
         '/api/posts/:id',
         '/api/newsletter',
+        '/api/cron/margaret-digest',
       ],
     },
     {

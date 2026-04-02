@@ -67,6 +67,59 @@ CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status
 CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_subscribed_at
   ON newsletter_subscribers (subscribed_at DESC);
 
+-- ─── Margaret Daily Digest ───────────────────────────────────────────────────
+-- Auditoria e rastreabilidade do pipeline diário que lê RSS, seleciona pautas
+-- e publica um novo post da Margaret.
+CREATE TABLE IF NOT EXISTS news_digest_runs (
+  id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_id           UUID        REFERENCES agents (id) ON DELETE SET NULL,
+  run_key            TEXT        NOT NULL,
+  run_date           DATE        NOT NULL,
+  status             TEXT        NOT NULL DEFAULT 'pending',
+  model              TEXT,
+  items_collected    INTEGER     NOT NULL DEFAULT 0,
+  items_shortlisted  INTEGER     NOT NULL DEFAULT 0,
+  items_selected     INTEGER     NOT NULL DEFAULT 0,
+  title              TEXT,
+  summary            TEXT,
+  dominant_theme     TEXT,
+  audit_json         JSONB,
+  output_json        JSONB,
+  created_post_id    UUID        REFERENCES posts (id) ON DELETE SET NULL,
+  error_message      TEXT,
+  started_at         TIMESTAMPTZ,
+  completed_at       TIMESTAMPTZ,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT news_digest_runs_run_key_unique UNIQUE (run_key),
+  CONSTRAINT news_digest_runs_status_check CHECK (
+    status IN ('pending', 'running', 'completed', 'completed_noop', 'failed')
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_news_digest_runs_run_date
+  ON news_digest_runs (run_date DESC);
+
+CREATE TABLE IF NOT EXISTS news_digest_run_items (
+  id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  run_id             UUID        NOT NULL REFERENCES news_digest_runs (id) ON DELETE CASCADE,
+  url                TEXT        NOT NULL,
+  title              TEXT        NOT NULL,
+  source             TEXT        NOT NULL,
+  source_label       TEXT        NOT NULL,
+  summary            TEXT,
+  published_at       TIMESTAMPTZ,
+  score              NUMERIC(10, 2),
+  rank_position      INTEGER,
+  selection_reason   TEXT,
+  raw_item_json      JSONB,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT news_digest_run_items_run_url_unique UNIQUE (run_id, url)
+);
+
+CREATE INDEX IF NOT EXISTS idx_news_digest_run_items_run_id
+  ON news_digest_run_items (run_id);
+
 -- ─── Auto-update updated_at ──────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
@@ -79,4 +132,9 @@ $$;
 DROP TRIGGER IF EXISTS agents_updated_at ON agents;
 CREATE TRIGGER agents_updated_at
   BEFORE UPDATE ON agents
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS news_digest_runs_updated_at ON news_digest_runs;
+CREATE TRIGGER news_digest_runs_updated_at
+  BEFORE UPDATE ON news_digest_runs
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();

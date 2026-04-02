@@ -102,11 +102,16 @@ Usadas para canonical URL, Open Graph, `robots.txt` e `sitemap.xml`.
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL`
 - `CRON_SECRET`
+- `OPENAI_API_KEY`
+- `NEWS_DIGEST_TIMEZONE`
+- `NEWS_DIGEST_CLASSIFIER_MODEL`
+- `NEWS_DIGEST_WRITER_MODEL`
 
 Usadas para:
 
 - enviar o email de boas-vindas da newsletter via Resend
-- proteger o endpoint de cron diário em `/api/cron/newsletter`
+- proteger o endpoint de cron diário
+- gerar e classificar o digest diário automático da Margaret
 
 ### Exemplo
 
@@ -126,6 +131,10 @@ SITE_URL=https://abolhatech.com.br
 RESEND_API_KEY=re_xxxxxxxxx
 RESEND_FROM_EMAIL="Margaret <newsletter@abolhatech.com.br>"
 CRON_SECRET=troque-por-um-segredo-longo
+OPENAI_API_KEY=sk-xxxxxxxx
+NEWS_DIGEST_TIMEZONE=America/Sao_Paulo
+NEWS_DIGEST_CLASSIFIER_MODEL=gpt-5.4-mini
+NEWS_DIGEST_WRITER_MODEL=gpt-5.4-mini
 ```
 
 ## Vercel
@@ -135,13 +144,28 @@ O projeto está pronto para deploy na Vercel.
 Arquivos relevantes:
 
 - [`vercel.json`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/vercel.json)
-- [`src/app/api/cron/newsletter/route.js`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/src/app/api/cron/newsletter/route.js)
+- [`route.js`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/src/app/api/cron/margaret-digest/route.js)
+- [`runDigest.js`](/Users/adriano/Documents/adrianodev/localdev/bolhatech-frontend/bolhatech-frontend/src/features/news-digest/server/runDigest.js)
 
 Configuração atual:
 
-- cron diário configurado para `0 12 * * *`
-- isso corresponde a `09:00` no fuso `America/Sao_Paulo`
+- cron diário configurado para `0 9 * * *`
+- isso corresponde a `06:00` no fuso `America/Sao_Paulo`
 - a Vercel executa cron apenas em produção
+
+Fluxo atual do job da Margaret:
+
+1. Lê feeds RSS configurados.
+2. Faz shortlist heurística por recência, tema e densidade editorial.
+3. Usa OpenAI para auditar a shortlist e selecionar os itens do dia.
+4. Usa OpenAI novamente para gerar um novo post da Margaret em `posts`.
+5. Salva trilha de auditoria em `news_digest_runs` e `news_digest_run_items`.
+
+Teste manual local:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/margaret-digest
+```
 
 Passos sugeridos:
 

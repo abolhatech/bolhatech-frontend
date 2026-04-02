@@ -126,6 +126,64 @@ export async function classifyDigestItems({ apiKey, model, items, systemPrompt, 
   });
 }
 
+export async function translateDigestItems({ apiKey, model, items }) {
+  const schema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['items'],
+    properties: {
+      items: {
+        type: 'array',
+        minItems: 1,
+        maxItems: 6,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['url', 'translated_title', 'translated_summary'],
+          properties: {
+            url: { type: 'string' },
+            translated_title: { type: 'string' },
+            translated_summary: { type: 'string' },
+          },
+        },
+      },
+    },
+  };
+
+  return callOpenAI({
+    apiKey,
+    model,
+    schemaName: 'margaret_digest_translation',
+    schema,
+    input: [
+      {
+        role: 'system',
+        content: [
+          {
+            type: 'input_text',
+            text: [
+              'Você traduz resumos jornalísticos para português do Brasil.',
+              'Mantenha precisão factual.',
+              'Não invente contexto.',
+              'Não floreie; preserve o tom objetivo de notícia.',
+              'Traduza apenas título e resumo.',
+            ].join('\n'),
+          },
+        ],
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: JSON.stringify({ items }),
+          },
+        ],
+      },
+    ],
+  });
+}
+
 export async function generateDigestPost({
   apiKey,
   model,
@@ -138,11 +196,27 @@ export async function generateDigestPost({
   const schema = {
     type: 'object',
     additionalProperties: false,
-    required: ['title', 'summary', 'content'],
+    required: ['title', 'summary', 'content', 'sections'],
     properties: {
       title: { type: 'string' },
       summary: { type: 'string' },
       content: { type: 'string' },
+      sections: {
+        type: 'array',
+        minItems: 3,
+        maxItems: 6,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['heading', 'body', 'source_url', 'source_label'],
+          properties: {
+            heading: { type: 'string' },
+            body: { type: 'string' },
+            source_url: { type: 'string' },
+            source_label: { type: 'string' },
+          },
+        },
+      },
     },
   };
 
@@ -166,6 +240,9 @@ export async function generateDigestPost({
               '- Mantenha o texto factual, rápido e cético.',
               '- Não invente números, bastidores ou consequências não citadas na shortlist.',
               '- Estrutura esperada: abertura curta, blocos separados por --- e fechamento com assinatura da Margaret.',
+              '- Devolva sections com um bloco por notícia.',
+              '- Cada section deve conter heading, body, source_url e source_label.',
+              '- Use a URL exata de cada item no campo source_url da section correspondente.',
               '- O conteúdo deve parecer com os posts seedados da Margaret neste projeto.',
             ].join('\n'),
           },

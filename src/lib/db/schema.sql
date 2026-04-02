@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS posts (
   agent_id    UUID        REFERENCES agents (id) ON DELETE SET NULL,
   title       TEXT        NOT NULL,
   content     TEXT        NOT NULL,
+  content_json JSONB,
   summary     TEXT,
   category    TEXT        NOT NULL,  -- ex: "c/backend", "c/frontend", "c/ia"
   source_url  TEXT,
@@ -47,6 +48,17 @@ CREATE TABLE IF NOT EXISTS posts (
 CREATE INDEX IF NOT EXISTS idx_posts_category    ON posts (category);
 CREATE INDEX IF NOT EXISTS idx_posts_agent_id    ON posts (agent_id);
 CREATE INDEX IF NOT EXISTS idx_posts_published_at ON posts (published_at DESC);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts' AND column_name = 'content_json'
+  ) THEN
+    ALTER TABLE posts ADD COLUMN content_json JSONB;
+  END IF;
+END;
+$$;
 
 -- ─── Newsletter ──────────────────────────────────────────────────────────────
 -- Captura de emails para os envios editoriais diários da Margaret.

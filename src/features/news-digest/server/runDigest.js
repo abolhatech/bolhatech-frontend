@@ -1,10 +1,15 @@
-import { classifyDigestItems, generateDigestPost } from './openai';
+import {
+  classifyDigestItems,
+  generateDigestPost,
+  translateDigestItems,
+} from './openai';
 import { getNewsDigestConfig } from './config';
 import { shortlistNewsItems } from './audit';
 import { collectRssItems } from './rss';
 import {
   createDigestRun,
   getDigestRunByKey,
+  publishDigestRunIfMissingPost,
   getMargaretAgent,
   markDigestRunFailed,
   markDigestRunNoop,
@@ -47,18 +52,20 @@ function buildFallbackAudit(shortlist, config) {
 function buildFallbackPost({ runDate, selectedItems, dominantTheme }) {
   const title = `Panorama Tech — ${runDate.replaceAll('-', '/')}`;
   const summary = `${selectedItems.length} sinais do dia escolhidos pela Margaret, com o ceticismo regulamentar de quem já viu hype demais.`;
-  const blocks = selectedItems.map((item) =>
-    [
-      item.title,
-      '',
-      `${item.summary} Margaret colocou isso na lista porque ${item.selection_reason}.`,
-      `Fonte: ${item.url}`,
-    ].join('\n')
+  const sections = selectedItems.map((item) => ({
+    heading: item.title,
+    body: `${item.summary} Margaret colocou isso na lista porque ${item.selection_reason}.`,
+    source_url: item.url,
+    source_label: item.sourceLabel,
+  }));
+  const blocks = sections.map((section) =>
+    [section.heading, '', section.body, `Fonte: ${section.source_url}`].join('\n')
   );
 
   return {
     title,
     summary,
+    sections,
     content: [
       'por Margaret | correspondente de campo para o noticiário que envelhece rápido',
       '',
@@ -92,18 +99,55 @@ function resolveSelectedItems(shortlist, selectedSpecs) {
     .sort((left, right) => left.rank_position - right.rank_position);
 }
 
+function applyTranslatedItems(selectedItems, translatedItems) {
+  const translationMap = new Map(
+    translatedItems.map((item) => [item.url, item])
+  );
+
+  return selectedItems.map((item) => {
+    const translated = translationMap.get(item.url);
+
+    if (!translated) {
+      return item;
+    }
+
+    return {
+      ...item,
+      title: translated.translated_title || item.title,
+      summary: translated.translated_summary || item.summary,
+      rawText: `${translated.translated_title || item.title}\n${translated.translated_summary || item.summary}`.trim(),
+    };
+  });
+}
+
 export async function runMargaretDailyDigest({ now = new Date(), force = false } = {}) {
   const config = getNewsDigestConfig();
   const runDate = formatRunDate(now, config.timezone);
   const runKey = buildRunKey(runDate);
   const existingRun = await getDigestRunByKey(runKey);
 
-  if (!force && existingRun?.status === 'completed') {
+  if (!force && existingRun?.status === 'completed' && existingRun?.created_post_id) {
     return {
       ok: true,
       skipped: true,
       reason: 'already_completed',
       run: existingRun,
+    };
+  }
+
+  if (!force && existingRun?.status === 'completed' && !existingRun?.created_post_id) {
+    const repairedPostId = await publishDigestRunIfMissingPost(existingRun.id);
+
+    return {
+      ok: true,
+      skipped: false,
+      repaired: true,
+      reason: 'published_missing_post',
+      runId: existingRun.id,
+      postId: repairedPostId,
+      runDate,
+      title: existingRun.title ?? existingRun.output_json?.title ?? null,
+      selectedCount: existingRun.items_selected ?? 0,
     };
   }
 
@@ -177,6 +221,23 @@ export async function runMargaretDailyDigest({ now = new Date(), force = false }
         reason: 'no_selected_items',
         runId: run.id,
       };
+    }
+
+    if (config.openAiApiKey) {
+      const translationResult = await translateDigestItems({
+        apiKey: config.openAiApiKey,
+        model: config.classifierModel,
+        items: auditOutput.selectedItems.map((item) => ({
+          url: item.url,
+          title: item.title,
+          summary: item.summary,
+        })),
+      });
+
+      auditOutput.selectedItems = applyTranslatedItems(
+        auditOutput.selectedItems,
+        translationResult.items || []
+      );
     }
 
     const postOutput = config.openAiApiKey

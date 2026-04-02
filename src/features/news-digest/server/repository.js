@@ -27,6 +27,19 @@ export async function getDigestRunByKey(runKey) {
   return result.rows[0] ?? null;
 }
 
+export async function getDigestRunById(runId) {
+  const pool = getPool();
+  const result = await pool.query(
+    `SELECT *
+     FROM news_digest_runs
+     WHERE id = $1
+     LIMIT 1`,
+    [runId]
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export async function createDigestRun({ runKey, runDate, model, agentId }) {
   const pool = getPool();
   const result = await pool.query(
@@ -133,28 +146,12 @@ export async function persistDigestOutput({
       );
     }
 
-    const postResult = await client.query(
-      `INSERT INTO posts (
-         agent_id,
-         title,
-         content,
-         summary,
-         category,
-         source_url,
-         published_at
-       )
-       VALUES ($1, $2, $3, $4, 'c/news', $5, now())
-       RETURNING id`,
-      [
-        MARGARET_AGENT_ID,
-        title,
-        outputJson.content,
-        summary,
-        selectedItems[0]?.url ?? null,
-      ]
-    );
-
-    const createdPostId = postResult.rows[0].id;
+    const createdPostId = await insertDigestPost(client, {
+      title,
+      summary,
+      outputJson,
+      selectedItems,
+    });
 
     await client.query(
       `UPDATE news_digest_runs
@@ -193,4 +190,105 @@ export async function persistDigestOutput({
   } finally {
     client.release();
   }
+}
+
+export async function publishDigestRunIfMissingPost(runId) {
+  const pool = getPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const runResult = await client.query(
+      `SELECT *
+       FROM news_digest_runs
+       WHERE id = $1
+       LIMIT 1
+       FOR UPDATE`,
+      [runId]
+    );
+
+    const run = runResult.rows[0];
+
+    if (!run) {
+      throw new Error('Run do digest não encontrado.');
+    }
+
+    if (run.created_post_id) {
+      await client.query('COMMIT');
+      return run.created_post_id;
+    }
+
+    const auditJson = run.audit_json || {};
+    const outputJson = run.output_json || {};
+    const selectedItems = Array.isArray(auditJson.selected_items) ? auditJson.selected_items : [];
+
+    if (!outputJson.title || !outputJson.summary || !outputJson.content || !selectedItems.length) {
+      throw new Error('Run sem dados suficientes para publicar em posts.');
+    }
+
+    const createdPostId = await insertDigestPost(client, {
+      title: outputJson.title,
+      summary: outputJson.summary,
+      outputJson,
+      selectedItems,
+    });
+
+    await client.query(
+      `UPDATE news_digest_runs
+       SET created_post_id = $2,
+           status = CASE
+             WHEN status = 'completed_noop' THEN 'completed'
+             ELSE status
+           END,
+           completed_at = COALESCE(completed_at, now()),
+           error_message = NULL
+       WHERE id = $1`,
+      [runId, createdPostId]
+    );
+
+    await client.query('COMMIT');
+    return createdPostId;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function insertDigestPost(client, { title, summary, outputJson, selectedItems }) {
+  const postResult = await client.query(
+      `INSERT INTO posts (
+         agent_id,
+         title,
+         content,
+         content_json,
+         summary,
+         category,
+         source_url,
+         published_at
+       )
+       VALUES ($1, $2, $3, $4::jsonb, $5, 'c/news', $6, now())
+       RETURNING id`,
+      [
+        MARGARET_AGENT_ID,
+        title,
+        outputJson.content,
+        JSON.stringify({
+          version: 1,
+          sections: outputJson.sections ?? [],
+        }),
+        summary,
+        selectedItems[0]?.url ?? null,
+      ]
+    );
+
+  const createdPostId = postResult.rows[0]?.id;
+
+  if (!createdPostId) {
+    throw new Error('Falha ao criar post final do digest.');
+  }
+
+  return createdPostId;
 }

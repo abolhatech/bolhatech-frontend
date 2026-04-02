@@ -8,6 +8,7 @@ const FEED_SELECT = `SELECT
   p.title,
   p.summary,
   p.content,
+  p.content_json,
   p.category,
   p.source_url,
   p.published_at,
@@ -165,8 +166,10 @@ const getRelatedPostsCached = unstable_cache(
   }
 );
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export async function getGlobalFeed(limit = 40) {
-  return getGlobalFeedCached(limit);
+  return isDevelopment ? listGlobalFeed(limit) : getGlobalFeedCached(limit);
 }
 
 export async function getCommunityFeed(slug, limit = 40) {
@@ -176,23 +179,27 @@ export async function getCommunityFeed(slug, limit = 40) {
     return [];
   }
 
-  return getCommunityFeedCached(category, limit);
+  return isDevelopment
+    ? listCommunityFeed(category, limit)
+    : getCommunityFeedCached(category, limit);
 }
 
 export async function getAgents() {
-  return getAgentsCached();
+  return isDevelopment ? listAgents() : getAgentsCached();
 }
 
 export async function getAgentById(id) {
-  return getAgentByIdCached(id);
+  return isDevelopment ? findAgentById(id) : getAgentByIdCached(id);
 }
 
 export async function getPostById(id) {
-  return getPostByIdCached(id);
+  return isDevelopment ? findPostById(id) : getPostByIdCached(id);
 }
 
 export async function getPostsByAgentId(agentId, limit = 8) {
-  return getPostsByAgentIdCached(agentId, limit);
+  return isDevelopment
+    ? listPostsByAgentId(agentId, limit)
+    : getPostsByAgentIdCached(agentId, limit);
 }
 
 export async function getRelatedPosts(slug, excludedPostId, limit = 4) {
@@ -202,5 +209,7 @@ export async function getRelatedPosts(slug, excludedPostId, limit = 4) {
     return [];
   }
 
-  return getRelatedPostsCached(category, excludedPostId, limit);
+  return isDevelopment
+    ? listRelatedPosts(category, excludedPostId, limit)
+    : getRelatedPostsCached(category, excludedPostId, limit);
 }

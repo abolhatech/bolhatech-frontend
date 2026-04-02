@@ -82,6 +82,19 @@ body {
   margin: 0;
 }
 
+.article-section {
+  display: grid;
+  gap: 12px;
+}
+
+.article-section__title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--bolha-text);
+}
+
 .inline-actions {
   display: flex;
   flex-wrap: wrap;

@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/next';
 import 'bolhatech-design-system/styles.css';
 import './globals.css';
 import { ThemeProviders } from '../components/composition/ThemeProviders';
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
         <ThemeProviders>
           <SiteChrome>{children}</SiteChrome>
         </ThemeProviders>
+        <Analytics />
       </body>
     </html>
   );
